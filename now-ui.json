@@ -1,0 +1,18 @@
+{
+  "components": {
+    "x-592624-adaptive-cards-designer-servicenow": {
+      "innerComponents": [],
+      "uiBuilder": {
+        "associatedTypes": [
+          "global.core",
+          "global.landing-page"
+        ],
+        "label": "Adaptive Cards Designer",
+        "tileIcon": "./tile-icon/generic-tile-icon.svg",
+        "description": "A component for designing Adaptive Cards.",
+        "category": "primitives"
+      }
+    }
+  },
+  "scopeName": "x_apig_adaptive_ca"
+}

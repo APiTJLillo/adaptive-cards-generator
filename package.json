@@ -1,0 +1,33 @@
+{
+  "name": "adaptive-cards-designer-servicenow",
+  "version": "0.0.1",
+  "private": false,
+  "description": "Design adaptive cards with a UI Builder component.",
+  "keywords": [
+    "ServiceNow",
+    "Next Experience UI Component",
+    "adaptive-cards-designer-servicenow"
+  ],
+  "readme": "./README.md",
+  "engines": {
+    "node": ">=14"
+  },
+  "module": "src/index.js",
+  "dependencies": {
+    "@servicenow/sass-kit": "latest",
+    "@servicenow/ui-core": "24.1.1",
+    "@servicenow/ui-renderer-snabbdom": "24.1.1",
+    "adaptive-expressions": "^4.22.3",
+    "adaptivecards": "^2.11.3",
+    "adaptivecards-designer": "^2.4.4",
+    "adaptivecards-templating": "^2.3.1",
+    "markdown-it": "^14.1.0",
+    "monaco-editor": "^0.29.1",
+    "react-helmet": "^6.1.0"
+  },
+  "devDependencies": {
+    "@babel/runtime": "7.18.9",
+    "ajv": "^6.12.6",
+    "sass": "1.53.0"
+  }
+}
