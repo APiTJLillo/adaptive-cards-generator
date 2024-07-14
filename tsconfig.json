@@ -1,0 +1,18 @@
+{
+	"exclude": ["node_modules", "**/*.spec.ts"],
+	"compilerOptions": {
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+		"module": "commonjs",
+		"target": "es6",
+		"lib": ["dom", "es2022"],
+		"moduleResolution": "node",
+		"jsx": "react",
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"declaration": true,
+		"outDir": "./lib",
+		"resolveJsonModule": true,
+		"types": ["node"]
+	},
+}

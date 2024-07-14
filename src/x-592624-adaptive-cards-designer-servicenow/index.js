@@ -1,8 +1,8 @@
 import { createCustomElement, actionTypes } from "@servicenow/ui-core";
 import snabbdom from "@servicenow/ui-renderer-snabbdom";
 import styles from "./styles.scss";
-
 import * as ACDesigner from "adaptivecards-designer";
+import * as monaco from "monaco-editor";
 
 const view = (state, { updateState, dispatch }) => {
     return (
@@ -30,36 +30,43 @@ const createGlobalDocumentProxy = (shadowRoot) => {
     };
 
     // Proxy appendChild to catch stylesheet additions
-    const originalAppendChild = document.head.appendChild.bind(document.head);
     document.head.appendChild = function(child) {
-        if (child.tagName === 'LINK' && child.rel === 'stylesheet') {
-            // Instead of appending to document.head, load the stylesheet manually
-            loadStylesheet(child.href, shadowRoot);
-            return child; // Return the child to mimic normal behavior
-        }
-        return originalAppendChild(child);
+        return child;
     };
 };
 
-// Function to load a stylesheet
-const loadStylesheet = (href, shadowRoot) => {
-    fetch(href)
-        .then(response => response.text())
-        .then(css => {
-            const style = document.createElement('style');
-            style.textContent = css;
-            shadowRoot.appendChild(style);
-        })
-        .catch(error => console.error('Error loading stylesheet:', error));
+const configureMonaco = () => {
+    // Disable web workers
+    window.MonacoEnvironment = {
+        getWorkerUrl: function (moduleId, label) {
+            return 'data:text/javascript;charset=utf-8,';
+        }
+    };
+
+    // Configure Monaco
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: false,
+        allowComments: true,
+        schemas: [],
+        enableSchemaRequest: false
+    });
 };
 
-const initializeDesigner = (properties, updateState, host) => {
+const initializeDesigner = async (properties, updateState, host) => {
     const shadowRoot = host.shadowRoot;
+    let element = document.createElement('style');
+    //This will be a font loaded from https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff
+    element.innerHTML = `
+        @font-face {
+            font-family: "FabricMDL2Icons";
+            src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+        }
+    `;
+    top.window.document.head.appendChild(element);
     
-    // Create the global document proxy
     createGlobalDocumentProxy(shadowRoot);
+    configureMonaco();
 
-    // Ensure necessary elements exist
     const ensureElement = (id) => {
         let element = shadowRoot.getElementById(id);
         if (!element) {
@@ -74,9 +81,9 @@ const initializeDesigner = (properties, updateState, host) => {
 
     let hostContainers = [ACDesigner.defaultMicrosoftHosts[1]];
     ACDesigner.GlobalSettings.enableDataBindingSupport = true;
-    ACDesigner.GlobalSettings.showDataStructureToolbox = true;
-    ACDesigner.GlobalSettings.showSampleDataEditorToolbox = true;
-    ACDesigner.GlobalSettings.showSampleHostDataEditorToolbox = true;
+    ACDesigner.GlobalSettings.showDataStructureToolbox = false;
+    ACDesigner.GlobalSettings.showSampleDataEditorToolbox = false;
+    ACDesigner.GlobalSettings.showSampleHostDataEditorToolbox = false;
     ACDesigner.GlobalSettings.showVersionPicker = false;
     ACDesigner.GlobalSettings.showCardStructureToolbox = true;
     ACDesigner.GlobalSettings.selectedHostContainerControlsTargetVersion = true;
@@ -84,8 +91,8 @@ const initializeDesigner = (properties, updateState, host) => {
 
     try {
         const designer = new ACDesigner.CardDesigner(hostContainers);
-
         designer.attachTo(designerHostElement);
+        designer.monacoModuleLoaded(monaco);
 
         if (properties.predefinedCard) {
             designer.setCard(properties.predefinedCard);
