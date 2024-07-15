@@ -1,4 +1,3 @@
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -7,13 +6,10 @@ module.exports = {
   mode: 'production',
   module: {
     rules: [
-      {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader'
-        ]
-      },
+			{
+				test: /\.css$/,
+				use: ['style-loader', 'css-loader']
+			},
       {
         test: /\.js$/,
         use: [
@@ -25,8 +21,7 @@ module.exports = {
     ]
   },
   externals: {
-    'adaptivecards-designer': 'AdaptiveCardsDesigner',
-    'monaco-editor': 'monaco'
+    'adaptivecards-designer': 'AdaptiveCardsDesigner'
   },
   optimization: {
     minimize: true,
@@ -69,9 +64,6 @@ module.exports = {
       to: './',
       flatten: true
     }]),
-    new MonacoWebpackPlugin({
-      languages: ['json']
-    }),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.IgnorePlugin({
       resourceRegExp: /^\.\/locale$/,
