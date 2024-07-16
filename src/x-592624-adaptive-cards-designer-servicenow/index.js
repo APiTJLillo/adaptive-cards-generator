@@ -3,13 +3,7 @@ import snabbdom from "@servicenow/ui-renderer-snabbdom";
 import styles from "./styles.scss";
 import * as ACDesigner from "adaptivecards-designer";
 
-const view = (state, { updateState, dispatch }) => {
-	return (
-		<div className="adaptive-card-designer-container">
-			<div id="designerRootHost" className="designer-root"></div>
-		</div>
-	);
-};
+const view = (state, { updateState, dispatch }) => {};
 
 const createGlobalDocumentProxy = (shadowRoot) => {
 	const originalGetElementById = document.getElementById.bind(document);
@@ -105,6 +99,8 @@ const initializeDesigner = async (properties, updateState, host) => {
 	try {
 		const designer = new ACDesigner.CardDesigner(hostContainers);
 		designer._sampleHostDataEditorToolbox = {isVisible: false};
+		designer._copyJSONButton.isVisible = false;
+		designer._isMonacoEditorLoaded = false;
 		designer.attachTo(designerHostElement)
 		
 		if (properties.predefinedCard) {
@@ -131,8 +127,10 @@ const initializeDesigner = async (properties, updateState, host) => {
 			designerInitialized: false,
 		});
 	}
-	shadowRoot.getElementById("bottomCollapsedPaneTabHost").style.display = "none";
-	shadowRoot.getElementById("toolbarHost").style.display = "none";
+	var elementsToHide = ['jsonEditorPanel', 'bottomCollapsedPaneTabHost', 'toolbarHost'];
+	elementsToHide.forEach(element => {
+		shadowRoot.getElementById(element).style.display = "none";
+	});
 };
 
 createCustomElement("x-592624-adaptive-cards-designer-servicenow", {
