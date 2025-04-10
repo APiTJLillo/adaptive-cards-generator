@@ -25,6 +25,7 @@ export class WidgetContainer extends MultiThemeHostContainer {
             "#616161"
         );
         this._containerSize = size;
+        this._outerFrame = document.createElement("div");
     }
     
     static readonly widgetPadding: number = 16;

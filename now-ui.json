@@ -1,6 +1,6 @@
 {
   "components": {
-    "x-592624-adaptive-cards-designer-servicenow": {
+    "x-apig-adaptive-cards-designer-servicenow": {
       "innerComponents": [],
       "uiBuilder": {
         "associatedTypes": [

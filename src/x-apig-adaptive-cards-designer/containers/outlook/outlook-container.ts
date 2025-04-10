@@ -43,7 +43,12 @@ export class OutlookContainer extends SingleThemeHostContainer {
             }
         }
 
-        return null;
+        return new Adaptive.PaddingDefinition(
+            Adaptive.Spacing.None,
+            Adaptive.Spacing.None,
+            Adaptive.Spacing.None,
+            Adaptive.Spacing.None
+        );
     }
 
     public parseElement(element: Adaptive.CardElement, source: any, context: Adaptive.SerializationContext) {

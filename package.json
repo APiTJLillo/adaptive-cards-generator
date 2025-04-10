@@ -25,7 +25,12 @@
   },
   "devDependencies": {
     "@babel/runtime": "7.18.9",
+    "@types/node": "^22.14.0",
     "ajv": "^6.12.6",
-    "sass": "1.53.0"
+    "json-loader": "^0.5.7",
+    "sass": "1.53.0",
+    "terser-webpack-plugin": "^5.3.14",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3"
   }
 }

@@ -15,6 +15,10 @@ export class TimelineContainer extends SingleThemeHostContainer {
 
     public renderTo(hostElement: HTMLElement) {
         let target = document.getElementById("designerHost");
+        if (!target) {
+            target = hostElement;
+        }
+        
         let frame = document.createElement("div");
         frame.className = "timeline-frame";
         target.appendChild(frame);

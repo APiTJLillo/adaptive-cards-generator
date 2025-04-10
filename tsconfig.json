@@ -13,6 +13,12 @@
 		"declaration": true,
 		"outDir": "./lib",
 		"resolveJsonModule": true,
-		"types": ["node"]
-	},
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"types": ["node"],
+		"baseUrl": ".",
+		"paths": {
+			"*": ["node_modules/*", "src/*"]
+		}
+	}
 }

@@ -3,7 +3,38 @@ import snabbdom from "@servicenow/ui-renderer-snabbdom";
 import styles from "./styles.scss";
 import * as ACDesigner from "adaptivecards-designer";
 
-const view = (state, { updateState, dispatch }) => {};
+const view = (state, { updateState, dispatch }) => {
+    return {
+        type: 'div',
+        props: {
+            className: 'adaptive-cards-designer-container'
+        },
+        children: [
+            {
+                type: 'div',
+                props: {
+                    className: 'designer-wrapper'
+                },
+                children: [
+                    {
+                        type: 'div',
+                        props: {
+                            id: 'designerRootHost',
+                            className: state.designerInitialized ? '' : 'loading'
+                        }
+                    }
+                ]
+            },
+            state.status && {
+                type: 'div',
+                props: {
+                    className: `status-message ${state.designerInitialized ? 'success' : 'error'}`
+                },
+                children: state.status
+            }
+        ]
+    };
+};
 
 const createGlobalDocumentProxy = (shadowRoot) => {
 	const originalGetElementById = document.getElementById.bind(document);
@@ -64,13 +95,14 @@ const initializeDesigner = async (properties, updateState, host) => {
 	const shadowRoot = host.shadowRoot;
 	let element = document.createElement("style");
 	//This will be a font loaded from https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff
-	element.innerHTML = `
+element.innerHTML = `
         @font-face {
             font-family: "FabricMDL2Icons";
-            src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+            src: url("./fabricmdl2icons-3.54.woff") format("woff");
         }
     `;
-	top.window.document.head.appendChild(element);
+shadowRoot.appendChild(element);
+shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets];
 
 	createGlobalDocumentProxy(shadowRoot);
 
@@ -84,9 +116,20 @@ const initializeDesigner = async (properties, updateState, host) => {
 		return element;
 	};
 
-	const designerHostElement = ensureElement("designerRootHost");
+const designerWrapper = ensureElement("designerRootHost");
+designerWrapper.style.width = '100%';
+designerWrapper.style.height = '100%';
+designerWrapper.style.position = 'relative';
+designerWrapper.style.zIndex = '1';
 
-	let hostContainers = [ACDesigner.defaultMicrosoftHosts[1]];
+// Create a host container for the designer
+const designerContainer = document.createElement("div");
+designerContainer.style.width = '100%';
+designerContainer.style.height = '100%';
+designerContainer.style.position = 'relative';
+designerWrapper.appendChild(designerContainer);
+
+let hostContainers = [ACDesigner.defaultMicrosoftHosts[1]];
 	ACDesigner.GlobalSettings.enableDataBindingSupport = false;
 	ACDesigner.GlobalSettings.showDataStructureToolbox = false;
 	ACDesigner.GlobalSettings.showSampleDataEditorToolbox = false;
@@ -101,7 +144,7 @@ const initializeDesigner = async (properties, updateState, host) => {
 		designer._sampleHostDataEditorToolbox = {isVisible: false};
 		designer._copyJSONButton.isVisible = false;
 		designer._isMonacoEditorLoaded = false;
-		designer.attachTo(designerHostElement)
+		designer.attachTo(designerContainer);
 		
 		if (properties.predefinedCard) {
 			designer.setCard(properties.predefinedCard);
@@ -133,7 +176,7 @@ const initializeDesigner = async (properties, updateState, host) => {
 	});
 };
 
-createCustomElement("x-592624-adaptive-cards-designer-servicenow", {
+createCustomElement("x-apig-adaptive-cards-designer", {
 	renderer: { type: snabbdom },
 	view,
 	styles,

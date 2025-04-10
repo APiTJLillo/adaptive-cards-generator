@@ -1,15 +1,49 @@
+const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const TerserPlugin = require('terser-webpack-plugin');
+
+// Function to check if module is from adaptive-expressions
+const isAdaptiveExpressionsModule = (module) => {
+  return module.nameForCondition && module.nameForCondition().includes('adaptive-expressions');
+};
 
 module.exports = {
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    modules: ['node_modules', path.resolve(__dirname, 'src')],
+  },
   mode: 'production',
   module: {
     rules: [
-			{
-				test: /\.css$/,
-				use: ['style-loader', 'css-loader']
-			},
+      {
+        test: /\.json$/,
+        type: 'json',
+        include: [
+          path.resolve(__dirname, 'src'),
+          path.resolve(__dirname, 'node_modules')
+        ]
+      },
+      {
+        test: /\.tsx?$/,
+        use: [
+          'thread-loader',
+          {
+            loader: 'ts-loader',
+            options: {
+              compilerOptions: {
+                resolveJsonModule: true,
+                module: 'commonjs',
+                esModuleInterop: true,
+                allowSyntheticDefaultImports: true
+              },
+              transpileOnly: true
+            }
+          }
+        ],
+        include: path.resolve('src')
+      },
       {
         test: /\.js$/,
         use: [
@@ -30,6 +64,14 @@ module.exports = {
       terserOptions: {
         ecma: 6,
       },
+      sourceMap: {
+        filename: (info) => {
+          if (info.filename.includes('node_modules')) {
+            return false;
+          }
+          return info.filename + '.map';
+        }
+      }
     })],
     splitChunks: {
       chunks: 'all',
@@ -53,6 +95,7 @@ module.exports = {
       }
     }
   },
+  devtool: false,
   plugins: [
     new CopyWebpackPlugin([{
       from: 'node_modules/adaptivecards-designer/dist/containers/*',
@@ -69,6 +112,10 @@ module.exports = {
       resourceRegExp: /^\.\/locale$/,
       contextRegExp: /moment$/,
     }),
-    new BundleAnalyzerPlugin()
+    new BundleAnalyzerPlugin(),
+    new webpack.SourceMapDevToolPlugin({
+      include: ['src/x-apig-adaptive-cards-designer/**/*.js'],
+      exclude: [/node_modules/]
+    })
   ]
 };
