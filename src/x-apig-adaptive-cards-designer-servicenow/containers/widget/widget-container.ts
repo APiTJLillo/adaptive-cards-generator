@@ -13,7 +13,7 @@ export enum ContainerSize {
 
 export class WidgetContainer extends MultiThemeHostContainer {
     private _containerSize: ContainerSize;
-    private _outerFrame: HTMLDivElement;
+    private _outerFrame: HTMLDivElement = document.createElement("div");
 
     constructor(size: ContainerSize) {
         super(
@@ -25,7 +25,6 @@ export class WidgetContainer extends MultiThemeHostContainer {
             "#616161"
         );
         this._containerSize = size;
-        this._outerFrame = document.createElement("div");
     }
     
     static readonly widgetPadding: number = 16;

@@ -1,1 +1,1 @@
-import './x-apig-adaptive-cards-designer';
+import './x-apig-adaptive-cards-designer-servicenow';
