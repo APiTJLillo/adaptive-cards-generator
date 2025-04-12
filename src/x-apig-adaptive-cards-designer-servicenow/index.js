@@ -12,6 +12,16 @@ import "./containers/TableSelector";
 import "./containers/PillPanel";
 import "./containers/ParameterField";
 
+// Console logging helper for debugging
+const log = (message, data) => {
+  console.log(`[AdaptiveCardsDesigner] ${message}`, data || '');
+};
+
+// Error logging helper for debugging
+const logError = (message, error) => {
+  console.error(`[AdaptiveCardsDesigner] ${message}`, error);
+};
+
 const view = (state, { updateState, dispatch }) => {
   const { 
     sourceTable, 
@@ -23,6 +33,12 @@ const view = (state, { updateState, dispatch }) => {
     designerInitialized
   } = state;
 
+  log('Rendering component with state', { 
+    sourceTable, 
+    pillsCount: availablePills.length,
+    designerInitialized
+  });
+
   return (
     <div className="adaptive-cards-designer">
       <div className="designer-header">
@@ -30,7 +46,7 @@ const view = (state, { updateState, dispatch }) => {
       </div>
       
       <div className="designer-body">
-        {/* Add pill panel to the left side - only show when table is selected */}
+        {/* Add pill panel to the left side - always show when table is selected */}
         {sourceTable && (
           <div className="pill-panel-container">
             <x-apig-pill-panel
@@ -46,62 +62,75 @@ const view = (state, { updateState, dispatch }) => {
         <div className="designer-content">
           {/* Table selector */}
           <div className="designer-configuration">
-            <x-apig-table-selector 
-              value={sourceTable}
-              on-notify_table_selected={({ detail }) => {
-                dispatch('TABLE_SELECTED', { table: detail.table });
-              }}
-            />
+            <div className="notification-source">
+              <h3>Notification Source Table</h3>
+              <x-apig-table-selector 
+                value={sourceTable}
+                on-notify_table_selected={({ detail }) => {
+                  log('Table selected', detail.table);
+                  dispatch('TABLE_SELECTED', { table: detail.table });
+                }}
+              />
+            </div>
             
             {/* Parameter fields with pill support */}
-            {state.parameters && Object.keys(state.parameters).map(parameterId => {
-              const parameter = state.parameters[parameterId];
-              const hasPill = parameterPills[parameterId] !== undefined;
-              const pill = parameterPills[parameterId];
-              
-              return (
-                <x-apig-parameter-field
-                  key={parameterId}
-                  label={parameter.label || parameterId}
-                  value={parameter.value || ''}
-                  parameterType={parameter.type || 'string'}
-                  hasPill={hasPill}
-                  pill={pill}
-                  parameterId={parameterId}
-                  on-notify_pill_dropped={({ detail }) => {
-                    dispatch('PILL_DROPPED', { 
-                      parameterId: detail.parameterId, 
-                      pill: detail.pill 
-                    });
-                  }}
-                  on-notify_pill_removed={({ detail }) => {
-                    dispatch('PILL_REMOVED', { 
-                      parameterId: detail.parameterId 
-                    });
-                  }}
-                  on-notify_value_changed={({ detail }) => {
-                    dispatch('PARAMETER_VALUE_CHANGED', { 
-                      parameterId: detail.parameterId, 
-                      value: detail.value 
-                    });
-                  }}
-                />
-              );
-            })}
+            <div className="card-parameters">
+              <h3>Card Parameters</h3>
+              {state.parameters && Object.keys(state.parameters).map(parameterId => {
+                const parameter = state.parameters[parameterId];
+                const hasPill = parameterPills[parameterId] !== undefined;
+                const pill = parameterPills[parameterId];
+                
+                return (
+                  <x-apig-parameter-field
+                    key={parameterId}
+                    label={parameter.label || parameterId}
+                    value={parameter.value || ''}
+                    parameterType={parameter.type || 'string'}
+                    hasPill={hasPill}
+                    pill={pill}
+                    parameterId={parameterId}
+                    on-notify_pill_dropped={({ detail }) => {
+                      log('Pill dropped', detail);
+                      dispatch('PILL_DROPPED', { 
+                        parameterId: detail.parameterId, 
+                        pill: detail.pill 
+                      });
+                    }}
+                    on-notify_pill_removed={({ detail }) => {
+                      log('Pill removed', detail);
+                      dispatch('PILL_REMOVED', { 
+                        parameterId: detail.parameterId 
+                      });
+                    }}
+                    on-notify_value_changed={({ detail }) => {
+                      dispatch('PARAMETER_VALUE_CHANGED', { 
+                        parameterId: detail.parameterId, 
+                        value: detail.value 
+                      });
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
           
           {/* Card designer area - always visible */}
-          <div 
-            id="designer-container" 
-            className="card-designer-container"
-            ref={(el) => {
-              if (el && !designerInitialized) {
-                // Initialize the designer when the element is available
-                // and not already initialized
-                dispatch('INITIALIZE_DESIGNER', { container: el });
-              }
-            }}
-          ></div>
+          <div className="card-preview">
+            <h3>Card Preview</h3>
+            <div 
+              id="designer-container" 
+              className="card-designer-container"
+              ref={(el) => {
+                if (el && !designerInitialized) {
+                  // Initialize the designer when the element is available
+                  // and not already initialized
+                  log('Initializing designer with container', el);
+                  dispatch('INITIALIZE_DESIGNER', { container: el });
+                }
+              }}
+            ></div>
+          </div>
         </div>
       </div>
     </div>
@@ -204,6 +233,8 @@ const generateSampleData = (tableName) => {
 
 const actionHandlers = {
   [actionTypes.COMPONENT_BOOTSTRAPPED]: ({ updateState, dispatch }) => {
+    log('Component bootstrapped');
+    
     // Initialize component state
     updateState({
       sourceTable: '',
@@ -235,6 +266,8 @@ const actionHandlers = {
   },
   
   [actionTypes.COMPONENT_RENDERED]: ({ dispatch, host }) => {
+    log('Component rendered');
+    
     // Create document proxy for shadow DOM
     createGlobalDocumentProxy(host.shadowRoot);
   },
@@ -243,6 +276,8 @@ const actionHandlers = {
     const { container } = action.payload;
     
     try {
+      log('Initializing Adaptive Cards Designer');
+      
       // Initialize the Adaptive Cards Designer
       const designer = new ACDesigner.CardDesigner();
       
@@ -287,13 +322,37 @@ const actionHandlers = {
         }
       };
       
-      designer.hostConfig = new ACDesigner.HostConfig(hostConfig);
+      try {
+        designer.hostConfig = new ACDesigner.HostConfig(hostConfig);
+        log('Host config set successfully');
+      } catch (hostConfigError) {
+        logError('Error setting host config', hostConfigError);
+        // Try alternative approach if HostConfig constructor fails
+        try {
+          log('Trying alternative host config approach');
+          designer.hostConfig = hostConfig;
+        } catch (altHostConfigError) {
+          logError('Alternative host config approach failed', altHostConfigError);
+        }
+      }
       
       // Load the designer
-      designer.attachTo(container);
+      try {
+        log('Attaching designer to container');
+        designer.attachTo(container);
+        log('Designer attached successfully');
+      } catch (attachError) {
+        logError('Error attaching designer to container', attachError);
+      }
       
       // Set a sample card
-      designer.setCard(getSampleCardTemplate());
+      try {
+        log('Setting sample card');
+        designer.setCard(getSampleCardTemplate());
+        log('Sample card set successfully');
+      } catch (setCardError) {
+        logError('Error setting sample card', setCardError);
+      }
       
       // Update state with designer instance
       updateState({ 
@@ -305,12 +364,13 @@ const actionHandlers = {
       dispatch('UPDATE_CARD_CONFIGURATION');
       
     } catch (error) {
-      console.error('Error initializing designer:', error);
+      logError('Error initializing designer', error);
     }
   },
   
   'TABLE_SELECTED': ({ action, updateState, dispatch }) => {
     const { table } = action.payload;
+    log('Table selected action', table);
     
     // Update selected table
     updateState({ 
@@ -325,6 +385,7 @@ const actionHandlers = {
   
   'GENERATE_PILLS': async ({ action, updateState }) => {
     const { tableName } = action.payload;
+    log('Generate pills for table', tableName);
     
     if (!tableName) {
       updateState({ 
@@ -337,11 +398,15 @@ const actionHandlers = {
     
     try {
       // Fetch table schema
+      log('Fetching table schema');
       const tableSchema = await ServiceNowService.fetchTableSchema(tableName);
+      log('Table schema fetched', tableSchema);
       
       // Generate pills
+      log('Generating pills');
       const pillGenerator = new PillGenerationSystem();
       const { pills, categories } = pillGenerator.generatePills(tableSchema, tableName);
+      log('Pills generated', { pillCount: pills.length, categories: Object.keys(categories) });
       
       // Update state with available pills
       updateState({ 
@@ -350,6 +415,7 @@ const actionHandlers = {
         loadingPills: false 
       });
     } catch (error) {
+      logError('Failed to generate pills', error);
       updateState({ 
         pillError: `Failed to generate pills: ${error.message}`,
         loadingPills: false,
@@ -361,6 +427,7 @@ const actionHandlers = {
   
   'PILL_DROPPED': ({ action, updateState, dispatch }) => {
     const { parameterId, pill } = action.payload;
+    log('Pill dropped action', { parameterId, pill });
     
     // Update parameter pills
     updateState(state => {
@@ -378,6 +445,7 @@ const actionHandlers = {
   
   'PILL_REMOVED': ({ action, updateState, dispatch }) => {
     const { parameterId } = action.payload;
+    log('Pill removed action', parameterId);
     
     // Remove pill from parameter
     updateState(state => {
@@ -393,6 +461,7 @@ const actionHandlers = {
   
   'PARAMETER_VALUE_CHANGED': ({ action, updateState, dispatch }) => {
     const { parameterId, value } = action.payload;
+    log('Parameter value changed action', { parameterId, value });
     
     // Update parameter value
     updateState(state => {
@@ -411,8 +480,10 @@ const actionHandlers = {
   
   'UPDATE_CARD_CONFIGURATION': ({ state, updateState }) => {
     const { parameters, parameterPills, designerInstance, sourceTable } = state;
+    log('Updating card configuration');
     
     if (!designerInstance) {
+      logError('Designer instance not available');
       return;
     }
     
@@ -435,9 +506,17 @@ const actionHandlers = {
     
     // Update the card preview
     updateState({ configuration });
+    log('Configuration updated', configuration);
     
     // Get the current card JSON
-    const cardJson = designerInstance.getCard();
+    let cardJson;
+    try {
+      cardJson = designerInstance.getCard();
+      log('Got current card JSON');
+    } catch (getCardError) {
+      logError('Error getting card JSON', getCardError);
+      return;
+    }
     
     // Create a data context with sample data
     const dataContext = {};
@@ -446,20 +525,24 @@ const actionHandlers = {
       // Generate sample data for the selected table
       const sampleData = generateSampleData(sourceTable);
       dataContext[sourceTable] = sampleData;
+      log('Generated sample data for table', { table: sourceTable, data: sampleData });
     }
     
     // Apply the data context to the card
     try {
+      log('Applying data context to card');
       // Use the Adaptive Cards templating engine to apply data
       const template = new ACDesigner.Template(cardJson);
       const card = template.expand({
         $root: dataContext
       });
+      log('Template expanded successfully');
       
       // Update the designer with the expanded card
       designerInstance.setCard(card);
+      log('Card updated in designer');
     } catch (error) {
-      console.error('Error updating card preview:', error);
+      logError('Error updating card preview', error);
     }
   }
 };
