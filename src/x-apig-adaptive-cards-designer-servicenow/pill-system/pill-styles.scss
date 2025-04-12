@@ -1,0 +1,259 @@
+/* Pill System Styles */
+
+/* Table Selector */
+.table-selector {
+  margin-bottom: 20px;
+}
+
+.table-selector label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.table-selector select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.table-selector .loading,
+.table-selector .error {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+}
+
+.table-selector .error {
+  color: #d32f2f;
+  border-color: #d32f2f;
+  background-color: #ffebee;
+}
+
+/* Pill Panel */
+.pill-panel {
+  width: 250px;
+  border-right: 1px solid #ddd;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pill-panel-header {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.pill-panel-header h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.pill-search input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.pill-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.pill-category {
+  margin-bottom: 10px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.category-header:hover {
+  background-color: #e0e0e0;
+}
+
+.category-icon {
+  margin-right: 5px;
+}
+
+.category-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.category-count {
+  background-color: #ddd;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.category-pills {
+  margin-left: 20px;
+  margin-top: 5px;
+}
+
+/* Pill Styles */
+.pill {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  cursor: grab;
+  color: white;
+  font-size: 13px;
+  transition: transform 0.1s;
+}
+
+.pill:hover {
+  transform: translateX(3px);
+}
+
+.pill-icon {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.pill-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pill-field {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-left: 5px;
+}
+
+/* Pill drag image */
+.pill-drag-image {
+  position: absolute;
+  top: -1000px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Loading and error states */
+.pill-panel.loading,
+.pill-panel.error,
+.pill-panel.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.pill-panel.error {
+  color: #d32f2f;
+}
+
+/* Parameter field styles */
+.parameter-container {
+  margin-bottom: 15px;
+}
+
+.parameter-container label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.parameter-field {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  min-height: 36px;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.parameter-field.drag-over {
+  border-color: #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.parameter-field.has-pill {
+  padding: 4px;
+}
+
+.parameter-field input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+/* Parameter pill styles */
+.parameter-pill {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 13px;
+}
+
+.parameter-pill .pill-icon {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.parameter-pill .pill-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parameter-pill .pill-remove {
+  background: none;
+  border: none;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 5px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parameter-pill .pill-remove:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Designer layout with pill panel */
+.designer-body {
+  display: flex;
+  height: 100%;
+}
+
+.designer-content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Add these to the existing styles.scss file */
