@@ -13,22 +13,20 @@
     "node": ">=14"
   },
   "module": "src/index.js",
-  "scripts": {
-    "test": "jest"
-  },
   "dependencies": {
     "@servicenow/sass-kit": "latest",
     "@servicenow/ui-core": "24.1.1",
-    "@servicenow/ui-renderer-snabbdom": "24.1.1"
+    "@servicenow/ui-renderer-snabbdom": "24.1.1",
+    "adaptive-expressions": "^4.22.3",
+    "adaptivecards": "^2.11.3",
+    "adaptivecards-designer": "^2.4.4",
+    "adaptivecards-templating": "^2.3.1",
+    "markdown-it": "^14.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.9",
-    "@babel/preset-env": "^7.23.9",
     "@babel/runtime": "7.18.9",
     "@types/node": "^22.14.0",
     "ajv": "^6.12.6",
-    "babel-jest": "^29.7.0",
-    "jest": "^29.7.0",
     "json-loader": "^0.5.7",
     "sass": "1.53.0",
     "terser-webpack-plugin": "^5.3.14",
