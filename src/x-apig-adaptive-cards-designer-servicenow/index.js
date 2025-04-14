@@ -3,6 +3,9 @@ import snabbdom from "@servicenow/ui-renderer-snabbdom";
 import styles from "./styles.scss";
 import * as ACDesigner from "adaptivecards-designer";
 import * as monaco from "monaco-editor";
+import "monaco-editor/esm/vs/language/json/monaco.contribution";
+import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
+import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
 import "adaptivecards-designer/dist/adaptivecards-designer.css";
 
 // Custom CardDesigner class
@@ -190,6 +193,105 @@ const initializeDesigner = async (properties, updateState, host) => {
 
         createGlobalDocumentProxy(shadowRoot);
 
+        // Configure Monaco environment
+        console.log('Setting up Monaco environment...');
+        
+        // Initialize Monaco features
+        await Promise.all([
+            monaco.languages.register({ id: 'json' }),
+            monaco.languages.register({ id: 'javascript' })
+        ]);
+
+        // Configure Monaco's loader
+        self.MonacoEnvironment = {
+            getWorkerUrl: function(moduleId, label) {
+                // Embed the worker code directly
+                const workerCode = `
+                    self.MonacoEnvironment = {
+                        baseUrl: '${window.location.origin}'
+                    };
+
+                    // Basic worker implementation
+                    self.onmessage = function(e) {
+                        const { data } = e;
+                        if (!data) return;
+                        
+                        switch (data.type) {
+                            case 'initialize':
+                                self.postMessage({ type: 'initialized' });
+                                break;
+                            case 'validate':
+                                try {
+                                    const json = JSON.parse(data.value);
+                                    self.postMessage({ 
+                                        type: 'validation-result',
+                                        markers: []
+                                    });
+                                } catch (e) {
+                                    self.postMessage({ 
+                                        type: 'validation-result',
+                                        markers: [{
+                                            message: e.message,
+                                            severity: 8,
+                                            startLineNumber: 1,
+                                            startColumn: 1,
+                                            endLineNumber: 1,
+                                            endColumn: 1
+                                        }]
+                                    });
+                                }
+                                break;
+                        }
+                    };
+                `;
+                
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                return URL.createObjectURL(blob);
+            }
+        };
+
+        // Configure Monaco with minimal features
+        const monacoConfig = {
+            language: 'json',
+            automaticLayout: true,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            lineNumbers: 'on',
+            roundedSelection: false,
+            scrollbar: {
+                vertical: 'visible',
+                horizontal: 'visible'
+            },
+            readOnly: false,
+            theme: 'vs',
+            useShadowDOM: false,
+            fixedOverflowWidgets: true,
+            contextmenu: false,
+            quickSuggestions: false,
+            wordBasedSuggestions: false,
+            parameterHints: { enabled: false },
+            suggestOnTriggerCharacters: false,
+            acceptSuggestionOnEnter: "off",
+            tabCompletion: "off",
+            wordWrap: "on",
+            folding: false,
+            links: false,
+            renderValidationDecorations: "off"
+        };
+
+        // Disable advanced features that require workers
+        monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+            validate: false,
+            allowComments: true,
+            schemas: [],
+            enableSchemaRequest: false
+        });
+
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+            noLib: true,
+            allowNonTsExtensions: true
+        });
+
         // Ensure DOM elements are ready
         const ensureElement = (id) => {
             let element = shadowRoot.getElementById(id);
@@ -254,17 +356,6 @@ const initializeDesigner = async (properties, updateState, host) => {
         // Initialize with empty card
         designer.card = { type: "AdaptiveCard", version: "1.0", body: [] };
 
-        // Configure Monaco environment
-        console.log('Setting up Monaco environment...');
-        self.MonacoEnvironment = {
-            getWorkerUrl: function (_, label) {
-                if (label === 'json') {
-                    return './json.worker.js';
-                }
-                return './editor.worker.js';
-            }
-        };
-
         // Attach designer to DOM
         designer.attachTo(designerContainer);
         designer.hostElement = designerContainer;
@@ -272,114 +363,82 @@ const initializeDesigner = async (properties, updateState, host) => {
         // Wait for initial render
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        try {
-            // Wait for Monaco to be ready
-            await new Promise(resolve => setTimeout(resolve, 100));
+        // Initialize designer with Monaco
+        await designer.monacoModuleLoaded(monaco, {
+            useShadowDOM: false,
+            monacoEditorConfig: monacoConfig
+        });
+        console.log('Monaco editor initialized successfully');
 
-            // Initialize Monaco with proper configuration
-            monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-                validate: true,
-                allowComments: true,
-                schemas: [{
-                    uri: "http://adaptivecards.io/schemas/adaptive-card.json",
-                    fileMatch: ["*"],
-                    schema: {
-                        type: "object",
-                        properties: {
-                            type: { type: "string", enum: ["AdaptiveCard"] },
-                            version: { type: "string" },
-                            $schema: { type: "string" },
-                            body: { 
-                                type: "array",
-                                items: { type: "object" }
-                            }
-                        }
+        // Set up card handling
+        const setupCardHandling = async () => {
+            try {
+                let originalSetJsonFromCard = designer.updateJsonFromCard.bind(designer);
+                designer.updateJsonFromCard = () => {
+                    try {
+                        const cardPayload = designer.getCard();
+                        console.log('Card updated, new payload:', cardPayload);
+                        updateState({ currentCardState: cardPayload });
+                        originalSetJsonFromCard();
+                    } catch (error) {
+                        console.error('Error in updateJsonFromCard:', error);
                     }
-                }],
-                enableSchemaRequest: false
-            });
+                };
 
-            // Initialize Monaco in the designer
-            await designer.monacoModuleLoaded(monaco);
-            console.log('Monaco editor initialized successfully');
+                // Handle initial card if provided
+                if (properties.predefinedCard) {
+                    console.log('Initial card found in properties:', properties.predefinedCard);
+                    const maxRetries = 3;
+                    let lastError = null;
 
-            // Set up card handling
-            const setupCardHandling = async () => {
-                try {
-                    let originalSetJsonFromCard = designer.updateJsonFromCard.bind(designer);
-                    designer.updateJsonFromCard = () => {
+                    for (let i = 0; i < maxRetries; i++) {
                         try {
-                            const cardPayload = designer.getCard();
-                            console.log('Card updated, new payload:', cardPayload);
-                            updateState({ currentCardState: cardPayload });
-                            originalSetJsonFromCard();
+                            await new Promise(resolve => setTimeout(resolve, 100 * (i + 1)));
+                            
+                            const initialCard = typeof properties.predefinedCard === 'string' 
+                                ? JSON.parse(properties.predefinedCard) 
+                                : properties.predefinedCard;
+                            
+                            console.log(`Setting initial card (attempt ${i + 1}/${maxRetries}):`, initialCard);
+                            
+                            designer.setCard(initialCard);
+                            await new Promise(resolve => setTimeout(resolve, 50));
+                            
+                            designer.updateJsonFromCard();
+                            updateState({ currentCardState: initialCard });
+                            
+                            console.log('Initial card set successfully');
+                            lastError = null;
+                            break;
                         } catch (error) {
-                            console.error('Error in updateJsonFromCard:', error);
-                        }
-                    };
-
-                    // Handle initial card if provided
-                    if (properties.predefinedCard) {
-                        console.log('Initial card found in properties:', properties.predefinedCard);
-                        const maxRetries = 3;
-                        let lastError = null;
-
-                        for (let i = 0; i < maxRetries; i++) {
-                            try {
-                                await new Promise(resolve => setTimeout(resolve, 100 * (i + 1)));
-                                
-                                const initialCard = typeof properties.predefinedCard === 'string' 
-                                    ? JSON.parse(properties.predefinedCard) 
-                                    : properties.predefinedCard;
-                                
-                                console.log(`Setting initial card (attempt ${i + 1}/${maxRetries}):`, initialCard);
-                                
-                                designer.setCard(initialCard);
-                                await new Promise(resolve => setTimeout(resolve, 50));
-                                
-                                designer.updateJsonFromCard();
-                                updateState({ currentCardState: initialCard });
-                                
-                                console.log('Initial card set successfully');
-                                lastError = null;
-                                break;
-                            } catch (error) {
-                                lastError = error;
-                                console.error(`Error setting initial card (attempt ${i + 1}/${maxRetries}):`, error);
-                            }
-                        }
-
-                        if (lastError) {
-                            throw lastError;
+                            lastError = error;
+                            console.error(`Error setting initial card (attempt ${i + 1}/${maxRetries}):`, error);
                         }
                     }
-                } catch (error) {
-                    console.error('Error in setupCardHandling:', error);
-                    throw error;
+
+                    if (lastError) {
+                        throw lastError;
+                    }
                 }
-            };
+            } catch (error) {
+                console.error('Error in setupCardHandling:', error);
+                throw error;
+            }
+        };
 
-            await setupCardHandling();
+        await setupCardHandling();
 
-            updateState({
-                status: "Designer initialized successfully",
-                designerInitialized: true,
-                designer: designer,
-                currentCardState: designer.getCard(),
-                properties: properties
-            });
-
-        } catch (error) {
-            console.error('Error initializing Monaco editor:', error);
-            throw error;
-        }
+        updateState({
+            status: "Designer initialized successfully",
+            designerInitialized: true,
+            designer: designer,
+            currentCardState: designer.getCard(),
+            properties: properties
+        });
 
     } catch (error) {
-        console.error("Error initializing designer:", error);
-        updateState({
-            status: "Error initializing designer: " + error.message,
-            designerInitialized: false,
-        });
+        console.error('Error initializing Monaco editor:', error);
+        throw error;
     }
 };
 

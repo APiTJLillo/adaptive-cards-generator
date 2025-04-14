@@ -7,7 +7,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
-    globalObject: 'self'
+    globalObject: 'self',
+    publicPath: '/'
   },
   module: {
     rules: [
@@ -27,7 +28,15 @@ module.exports = {
   },
   plugins: [
     new MonacoWebpackPlugin({
-      languages: ['json']
+      languages: ['json', 'javascript'],
+      filename: '[name].worker.js',
+      customLanguages: [{
+        label: 'json',
+        entry: 'monaco-editor/esm/vs/language/json/json.worker',
+        worker: {
+          id: 'vs/language/json/json.worker'
+        }
+      }]
     }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development')
@@ -35,7 +44,8 @@ module.exports = {
   ],
   devServer: {
     static: {
-      directory: path.join(__dirname, 'dist')
+      directory: path.join(__dirname, 'dist'),
+      publicPath: '/'
     },
     headers: {
       'Access-Control-Allow-Origin': '*',
@@ -47,9 +57,21 @@ module.exports = {
     host: '127.0.0.1'
   },
   resolve: {
-    extensions: ['.js', '.json']
+    extensions: ['.js', '.json'],
+    alias: {
+      'monaco-editor': path.resolve(__dirname, 'node_modules/monaco-editor')
+    }
   },
   optimization: {
-    minimize: false
+    minimize: false,
+    splitChunks: {
+      cacheGroups: {
+        monaco: {
+          test: /[\\/]node_modules[\\/]monaco-editor[\\/]/,
+          name: 'monaco',
+          chunks: 'all'
+        }
+      }
+    }
   }
 }; 
