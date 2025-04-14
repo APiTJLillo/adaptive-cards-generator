@@ -3,6 +3,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require('terser-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const path = require('path');
+window = self; // ServiceNow environment fix
 
 // Function to check if module is from adaptive-expressions
 const isAdaptiveExpressionsModule = (module) => {
@@ -13,11 +16,8 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
     modules: ['node_modules', path.resolve(__dirname, 'src')],
-    alias: {
-      'monaco-editor': path.resolve(__dirname, 'node_modules/monaco-editor'),
-      'vs': path.resolve(__dirname, 'node_modules/monaco-editor/esm/vs')
-    }
   },
+  mode: 'production',
   module: {
     rules: [
       {
@@ -51,24 +51,22 @@ module.exports = {
         test: /\.js$/,
         use: [
           'thread-loader',
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: [
-                ['@babel/preset-env', {
-                  useBuiltIns: 'usage',
-                  corejs: 3
-                }]
-              ],
-              plugins: ['@babel/plugin-transform-runtime']
-            }
-          }
+          'babel-loader'
         ],
         include: path.resolve('src')
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: false,
+              sourceMap: true
+            }
+          }
+        ]
       },
       {
         test: /\.ttf$/,
@@ -77,11 +75,42 @@ module.exports = {
     ]
   },
   externals: {
-    'adaptivecards-designer': {
-      root: 'AdaptiveCardsDesigner',
-      commonjs2: 'adaptivecards-designer',
-      commonjs: 'adaptivecards-designer',
-      amd: 'adaptivecards-designer'
+    'adaptivecards-designer': 'AdaptiveCardsDesigner'
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'dist'),
+      publicPath: '/',
+      serveIndex: true,
+    },
+    devMiddleware: {
+      writeToDisk: true
+    },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Service-Worker-Allowed': '/',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
+    },
+      setupMiddlewares: (middlewares, devServer) => {
+          if (!devServer) {
+              throw new Error('webpack-dev-server is not defined');
+          }
+
+          middlewares.push((req, res, next) => {
+              if (req.url.includes('/monaco-editor/')) {
+                  res.setHeader('Content-Type', 'application/javascript');
+                  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+              } else if (req.url.endsWith('.css')) {
+                  res.setHeader('Content-Type', 'text/css');
+              }
+              next();
+          });
+
+          return middlewares;
     }
   },
   optimization: {
@@ -124,37 +153,33 @@ module.exports = {
   },
   devtool: false,
   plugins: [
-    new webpack.DefinePlugin({
-      'process.browser': true
-    }),
-    new CopyWebpackPlugin([
-      {
-        from: 'node_modules/monaco-editor/min/vs',
-        to: 'vs',
-      },
-      {
-        from: 'node_modules/monaco-editor/min-maps/vs',
-        to: 'vs',
-        ignore: ['**/basic-languages/**', '**/language/**']
-      },
-      {
-        from: 'node_modules/monaco-editor/min/vs/language/json/json.worker.js',
-        to: 'vs/language/json/'
-      },
-      {
-        from: 'node_modules/monaco-editor/min/vs/editor/editor.worker.js',
-        to: 'vs/editor/'
-      },
-      {
-        from: 'node_modules/adaptivecards-designer/dist/containers/*',
-        to: 'containers/',
-        flatten: true
-      },
-      {
-        from: 'node_modules/adaptivecards-designer/src/adaptivecards-designer.css',
-        to: './',
-        flatten: true
-      }]),
+    new CopyWebpackPlugin([{
+      from: 'node_modules/monaco-editor/min/vs/base/worker',
+      to: 'monaco-editor/'
+    },
+    {
+      from: 'node_modules/monaco-editor/min/vs/language/json/json.worker.js',
+      to: 'monaco-editor/'
+    },
+    {
+      from: 'node_modules/adaptivecards-designer/dist/containers/*',
+      to: 'containers/',
+      flatten: true,
+      transform(content, path) {
+        if (path.endsWith('.css')) {
+          return Buffer.from(content.toString('utf8'), 'utf8');
+        }
+        return content;
+      }
+    },
+    {
+      from: 'node_modules/adaptivecards-designer/src/adaptivecards-designer.css',
+      to: './',
+      flatten: true,
+      transform(content) {
+        return Buffer.from(content.toString('utf8'), 'utf8');
+      }
+    }]),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.IgnorePlugin({
       resourceRegExp: /^\.\/locale$/,
@@ -164,6 +189,23 @@ module.exports = {
     new webpack.SourceMapDevToolPlugin({
       include: ['src/x-apig-adaptive-cards-designer/**/*.js'],
       exclude: [/node_modules/]
+    }),
+    new MonacoWebpackPlugin({
+      languages: ['json'],
+      filename: 'monaco-editor/[name].worker.js',
+      publicPath: '/monaco-editor/',
+      features: ['!inlineCompletions', '!anchorSelect', '!liftDown']
+    }),
+    new webpack.DefinePlugin({
+      'process.env.MONACO_WORKER_PATH': JSON.stringify('/monaco-editor/editor.worker.js'),
+      'process.env.MONACO_BASE_URL': JSON.stringify('/monaco-editor/'),
+      'process.env.MONACO_WORKER_BASE_URL': JSON.stringify('/monaco-editor/'),
+      'self.MonacoEnvironment': JSON.stringify({ baseUrl: '/monaco-editor/' })
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production'),
+      'process.env.MONACO_EDITOR_NO_WORKER': JSON.stringify('false'),
+      'process.env.WEBPACK_PUBLIC_PATH': JSON.stringify('./')
     })
   ]
 };
