@@ -3,7 +3,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require('terser-webpack-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 // Function to check if module is from adaptive-expressions
 const isAdaptiveExpressionsModule = (module) => {
@@ -14,8 +13,11 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
     modules: ['node_modules', path.resolve(__dirname, 'src')],
+    alias: {
+      'monaco-editor': path.resolve(__dirname, 'node_modules/monaco-editor'),
+      'vs': path.resolve(__dirname, 'node_modules/monaco-editor/esm/vs')
+    }
   },
-  mode: 'production',
   module: {
     rules: [
       {
@@ -49,7 +51,18 @@ module.exports = {
         test: /\.js$/,
         use: [
           'thread-loader',
-          'babel-loader'
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ['@babel/preset-env', {
+                  useBuiltIns: 'usage',
+                  corejs: 3
+                }]
+              ],
+              plugins: ['@babel/plugin-transform-runtime']
+            }
+          }
         ],
         include: path.resolve('src')
       },
@@ -64,7 +77,12 @@ module.exports = {
     ]
   },
   externals: {
-    'adaptivecards-designer': 'AdaptiveCardsDesigner'
+    'adaptivecards-designer': {
+      root: 'AdaptiveCardsDesigner',
+      commonjs2: 'adaptivecards-designer',
+      commonjs: 'adaptivecards-designer',
+      amd: 'adaptivecards-designer'
+    }
   },
   optimization: {
     minimize: true,
@@ -106,16 +124,37 @@ module.exports = {
   },
   devtool: false,
   plugins: [
-    new CopyWebpackPlugin([{
-      from: 'node_modules/adaptivecards-designer/dist/containers/*',
-      to: 'containers/',
-      flatten: true
-    },
-    {
-      from: 'node_modules/adaptivecards-designer/src/adaptivecards-designer.css',
-      to: './',
-      flatten: true
-    }]),
+    new webpack.DefinePlugin({
+      'process.browser': true
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: 'node_modules/monaco-editor/min/vs',
+        to: 'vs',
+      },
+      {
+        from: 'node_modules/monaco-editor/min-maps/vs',
+        to: 'vs',
+        ignore: ['**/basic-languages/**', '**/language/**']
+      },
+      {
+        from: 'node_modules/monaco-editor/min/vs/language/json/json.worker.js',
+        to: 'vs/language/json/'
+      },
+      {
+        from: 'node_modules/monaco-editor/min/vs/editor/editor.worker.js',
+        to: 'vs/editor/'
+      },
+      {
+        from: 'node_modules/adaptivecards-designer/dist/containers/*',
+        to: 'containers/',
+        flatten: true
+      },
+      {
+        from: 'node_modules/adaptivecards-designer/src/adaptivecards-designer.css',
+        to: './',
+        flatten: true
+      }]),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.IgnorePlugin({
       resourceRegExp: /^\.\/locale$/,
@@ -125,10 +164,6 @@ module.exports = {
     new webpack.SourceMapDevToolPlugin({
       include: ['src/x-apig-adaptive-cards-designer/**/*.js'],
       exclude: [/node_modules/]
-    }),
-    new MonacoWebpackPlugin({
-      languages: ['json'],
-      filename: '[name].worker.js'
     })
   ]
 };

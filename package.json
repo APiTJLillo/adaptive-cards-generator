@@ -21,7 +21,9 @@
     "adaptivecards": "^2.11.3",
     "adaptivecards-designer": "^2.4.4",
     "adaptivecards-templating": "^2.3.1",
-    "markdown-it": "^14.1.0"
+    "markdown-it": "^14.1.0",
+    "monaco-editor": "^0.33.0",
+    "monaco-editor-webpack-plugin": "^7.0.1"
   },
   "devDependencies": {
     "@babel/runtime": "7.18.9",
