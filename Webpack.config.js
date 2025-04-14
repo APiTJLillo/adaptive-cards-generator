@@ -3,6 +3,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require('terser-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 // Function to check if module is from adaptive-expressions
 const isAdaptiveExpressionsModule = (module) => {
@@ -51,6 +52,14 @@ module.exports = {
           'babel-loader'
         ],
         include: path.resolve('src')
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.ttf$/,
+        use: ['file-loader']
       }
     ]
   },
@@ -116,6 +125,10 @@ module.exports = {
     new webpack.SourceMapDevToolPlugin({
       include: ['src/x-apig-adaptive-cards-designer/**/*.js'],
       exclude: [/node_modules/]
+    }),
+    new MonacoWebpackPlugin({
+      languages: ['json'],
+      filename: '[name].worker.js'
     })
   ]
 };

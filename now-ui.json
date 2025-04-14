@@ -2,6 +2,17 @@
   "components": {
     "x-apig-adaptive-cards-designer-servicenow": {
       "innerComponents": [],
+      "properties": [
+        {
+          "name": "predefinedCard",
+          "label": "Card JSON",
+          "description": "JSON data for the Adaptive Card",
+          "readOnly": false,
+          "fieldType": "string",
+          "required": false,
+          "defaultValue": "{}"
+        }
+      ],
       "uiBuilder": {
         "associatedTypes": [
           "global.core",
