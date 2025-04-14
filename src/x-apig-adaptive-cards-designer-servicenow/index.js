@@ -6,7 +6,6 @@ import * as monaco from "monaco-editor";
 import "monaco-editor/esm/vs/language/json/monaco.contribution";
 import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
 import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
-import "adaptivecards-designer/dist/adaptivecards-designer.css";
 
 // Custom CardDesigner class
 class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
