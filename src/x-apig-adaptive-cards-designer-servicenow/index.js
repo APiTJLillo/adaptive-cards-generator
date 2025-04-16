@@ -67,9 +67,11 @@ const view = (state, { updateState, dispatch }) => {
             style: {
                 width: '100%',
                 height: '100%',
-                minHeight: '800px',
+                margin: 0,
+                padding: 0,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                overflow: 'hidden'
             }
         },
         children: [{
@@ -78,7 +80,10 @@ const view = (state, { updateState, dispatch }) => {
                 id: 'designerRootHost',
                 style: {
                     flex: 1,
-                    position: 'relative'
+                    position: 'relative',
+                    margin: 0,
+                    padding: 0,
+                    overflow: 'hidden'
                 }
             }
         }]
@@ -96,16 +101,6 @@ const createGlobalDocumentProxy = (shadowRoot) => {
     const originalBodyRemoveChild = document.body.removeChild.bind(document.body);
     const originalCreateElement = document.createElement.bind(document);
 
-    // Proxy document.createElement to handle Monaco's iframe creation
-    document.createElement = function(tagName) {
-        const element = originalCreateElement(tagName);
-        if (tagName.toLowerCase() === 'iframe') {
-            // Handle Monaco iframe specifics
-            element.setAttribute('data-monaco-frame', 'true');
-            shadowRoot.appendChild(element);
-        }
-        return element;
-    };
 
     // Enhance getElementById to better handle Monaco elements
     document.getElementById = function(id) {
@@ -175,11 +170,23 @@ const createGlobalDocumentProxy = (shadowRoot) => {
 const initializeDesigner = async (properties, updateState, host) => {
     try {
         const shadowRoot = host.shadowRoot;
+        shadowRoot.innerHTML = ''; // Clear any existing content
         const mainStyles = document.createElement('style');
         mainStyles.textContent = `
         @font-face {
             font-family: "FabricMDL2Icons";
             src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+        }
+        :host {
+            display: block;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .designer-host {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
         `;
         top.window.document.head.appendChild(mainStyles);
@@ -191,7 +198,7 @@ const initializeDesigner = async (properties, updateState, host) => {
             .monaco-editor {
                 position: absolute !important;
                 width: 100% !important;
-                height: 100% !important;
+                height: 100vh !important;
                 min-height: 400px !important;
                 overflow: visible !important;
                 contain: strict !important;
@@ -200,7 +207,7 @@ const initializeDesigner = async (properties, updateState, host) => {
             .monaco-editor .monaco-scrollable-element {
                 position: absolute !important;
                 width: 100% !important;
-                height: 100% !important;
+                height: 100vh !important;
                 min-height: 400px !important;
                 overflow: hidden !important;
                 contain: strict !important;
@@ -208,7 +215,7 @@ const initializeDesigner = async (properties, updateState, host) => {
             .inputarea {
                 position: absolute !important;
                 width: 100% !important;
-                height: 100% !important;
+                height: 100vh !important;
                 min-height: 400px !important;
                 overflow: hidden !important;
                 contain: strict !important;
@@ -311,9 +318,11 @@ const initializeDesigner = async (properties, updateState, host) => {
         const designerContainer = document.createElement('div');
         designerContainer.className = 'adaptive-cards-designer';
         designerContainer.style.width = '100%';
-        designerContainer.style.height = '100vh';
-        designerContainer.style.minHeight = '800px';
+        designerContainer.style.height = '98vh';
         designerContainer.style.position = 'relative';
+        designerContainer.style.margin = '0';
+        designerContainer.style.padding = '0';
+        designerContainer.style.overflow = 'hidden';
         designerHostElement.appendChild(designerContainer);
 
         // Create toolbox elements
@@ -516,5 +525,10 @@ if (propertyName === "predefinedCard") {
     }
 }
 },
-	},
+[actionTypes.COMPONENT_DISCONNECTED]: ({host}) => {
+    if (host.shadowRoot) {
+        host.shadowRoot.innerHTML = '';
+    }
+}
+},
 });
