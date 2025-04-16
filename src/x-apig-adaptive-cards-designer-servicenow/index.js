@@ -1,10 +1,7 @@
 import { createCustomElement, actionTypes } from "@servicenow/ui-core";
 import snabbdom from "@servicenow/ui-renderer-snabbdom";
-import styles from "./styles.scss";
+import * as monaco from "monaco-editor";
 import * as ACDesigner from "adaptivecards-designer";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import "monaco-editor/esm/vs/language/json/monaco.contribution";
-import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
 
 // Custom CardDesigner class
 class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
@@ -178,16 +175,52 @@ const createGlobalDocumentProxy = (shadowRoot) => {
 const initializeDesigner = async (properties, updateState, host) => {
     try {
         const shadowRoot = host.shadowRoot;
-        
-        // Initialize font
-        let element = document.createElement("style");
-        element.innerHTML = `
-            @font-face {
-                font-family: "FabricMDL2Icons";
-                src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+        const mainStyles = document.createElement('style');
+        mainStyles.textContent = `
+        @font-face {
+            font-family: "FabricMDL2Icons";
+            src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+        }
+        `;
+        top.window.document.head.appendChild(mainStyles);
+
+        // Add custom Monaco styles
+        const monacoStyles = document.createElement('style');
+        monacoStyles.textContent = `
+            /* Monaco editor styles */
+            .monaco-editor {
+                position: absolute !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 400px !important;
+                overflow: visible !important;
+                contain: strict !important;
+            }
+
+            .monaco-editor .monaco-scrollable-element {
+                position: absolute !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 400px !important;
+                overflow: hidden !important;
+                contain: strict !important;
+            }
+            .inputarea {
+                position: absolute !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 400px !important;
+                overflow: hidden !important;
+                contain: strict !important;
+                border: none !important;
+                user-select: none !important;
+                pointer-events: none !important;
+            }
+            .acd-toolbox {
+                overflow: hidden !important;
             }
         `;
-        top.window.document.head.appendChild(element);
+        shadowRoot.appendChild(monacoStyles);
 
         createGlobalDocumentProxy(shadowRoot);
 
@@ -246,35 +279,6 @@ const initializeDesigner = async (properties, updateState, host) => {
                 const blob = new Blob([workerCode], { type: 'application/javascript' });
                 return URL.createObjectURL(blob);
             }
-        };
-
-        // Configure Monaco with minimal features
-        const monacoConfig = {
-            language: 'json',
-            automaticLayout: true,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            lineNumbers: 'on',
-            roundedSelection: false,
-            scrollbar: {
-                vertical: 'visible',
-                horizontal: 'visible'
-            },
-            readOnly: false,
-            theme: 'vs',
-            useShadowDOM: false,
-            fixedOverflowWidgets: true,
-            contextmenu: false,
-            quickSuggestions: false,
-            wordBasedSuggestions: false,
-            parameterHints: { enabled: false },
-            suggestOnTriggerCharacters: false,
-            acceptSuggestionOnEnter: "off",
-            tabCompletion: "off",
-            wordWrap: "on",
-            folding: false,
-            links: false,
-            renderValidationDecorations: "off"
         };
 
         // Disable advanced features that require workers
@@ -340,6 +344,7 @@ const initializeDesigner = async (properties, updateState, host) => {
 
         // Create and initialize the designer
         const designer = new ServiceNowCardDesigner(hostContainers);
+        designer.assetPath = "https://unpkg.com/adaptivecards-designer@2.4.4/dist";
         
         // Initialize toolbox
         designer.initializeToolbox(toolboxContent, toolboxHeader);
@@ -362,10 +367,7 @@ const initializeDesigner = async (properties, updateState, host) => {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Initialize designer with Monaco
-        await designer.monacoModuleLoaded(monaco, {
-            useShadowDOM: false,
-            monacoEditorConfig: monacoConfig
-        });
+        await designer.monacoModuleLoaded(monaco);
         console.log('Monaco editor initialized successfully');
 
         // Set up card handling
@@ -443,7 +445,6 @@ const initializeDesigner = async (properties, updateState, host) => {
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 	renderer: { type: snabbdom },
 	view,
-	styles,
 properties: {
     predefinedCard: {
         default: '{}',
