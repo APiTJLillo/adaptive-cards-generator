@@ -11,6 +11,23 @@
           "fieldType": "string",
           "required": false,
           "defaultValue": "{}"
+        },
+        {
+          "name": "tableName",
+          "label": "Table Name",
+          "description": "The name of the table to fetch fields from",
+          "readOnly": false,
+          "fieldType": "string",
+          "required": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "fields",
+          "label": "Available Fields",
+          "description": "Array of field definitions from the table",
+          "fieldType": "array",
+          "required": false,
+          "defaultValue": "[]"
         }
       ],
       "uiBuilder": {

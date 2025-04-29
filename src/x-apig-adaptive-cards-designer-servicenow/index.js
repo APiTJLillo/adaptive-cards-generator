@@ -3,7 +3,6 @@ import snabbdom from "@servicenow/ui-renderer-snabbdom";
 import * as monaco from "monaco-editor";
 import * as ACDesigner from "adaptivecards-designer";
 
-// Custom CardDesigner class
 class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
     constructor(hostContainers) {
         super(hostContainers);
@@ -46,9 +45,61 @@ class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
     }
 }
 
+const createFieldSelector = (state, updateState, designer) => {
+    if (!state.tableFields || state.tableFields.length === 0) return null;
+
+    return {
+        tag: 'div',
+        props: {
+            className: 'field-selector'
+        },
+        children: [{
+            tag: 'select',
+            props: {
+                className: 'field-select',
+                on: {
+                    change: (e) => {
+                        const field = state.tableFields.find(f => f.name === e.target.value);
+                        if (field) {
+                            const textToInsert = field.isReference ? 
+                                `\${current.${field.name}.display_value}` : 
+                                `\${current.${field.name}}`;
+
+                            // Insert at current cursor position in Monaco editor
+                            if (designer && designer._jsonEditor) {
+                                const position = designer._jsonEditor.getPosition();
+                                designer._jsonEditor.executeEdits('field-insert', [{
+                                    range: designer._jsonEditor.getSelection(),
+                                    text: textToInsert
+                                }]);
+                            }
+                        }
+                    }
+                }
+            },
+            children: [
+                {
+                    tag: 'option',
+                    props: {
+                        value: ''
+                    },
+                    children: 'Select a field...'
+                },
+                ...state.tableFields.map(field => ({
+                    tag: 'option',
+                    props: {
+                        value: field.name
+                    },
+                    children: `${field.label} (${field.name})`
+                }))
+            ]
+        }]
+    };
+};
+
 const view = (state, { updateState, dispatch }) => {
     console.log('View function called with state:', state);
-    const { properties, currentCardState, designerInitialized, designer } = state;
+    const { properties, currentCardState, designerInitialized, designer, tableFields } = state;
     
     if (designerInitialized && designer) {
         console.log('Designer is initialized, current card state:', currentCardState);
@@ -59,7 +110,6 @@ const view = (state, { updateState, dispatch }) => {
         console.log('Designer not yet initialized');
     }
     
-    // Always return empty wrapper to avoid any text rendering
     const emptyWrapper = {
         type: 'div',
         props: {
@@ -173,23 +223,44 @@ const initializeDesigner = async (properties, updateState, host) => {
         shadowRoot.innerHTML = ''; // Clear any existing content
         const mainStyles = document.createElement('style');
         mainStyles.textContent = `
-        @font-face {
-            font-family: "FabricMDL2Icons";
-            src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
-        }
-        :host {
-            display: block;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-        .designer-host {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
+            @font-face {
+                font-family: "FabricMDL2Icons";
+                src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+            }
+            :host {
+                display: block;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+            .designer-host {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            .designer-toolbar {
+                padding: 8px;
+                background: #f8f8f8;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            .adaptive-cards-designer {
+                flex: 1;
+                min-height: 0;
+                position: relative;
+            }
+            #designerRootHost {
+                flex: 1;
+                min-height: 0;
+                position: relative;
+            }
         `;
-        top.window.document.head.appendChild(mainStyles);
+        shadowRoot.appendChild(mainStyles);
 
         // Add custom Monaco styles
         const monacoStyles = document.createElement('style');
@@ -451,18 +522,26 @@ const initializeDesigner = async (properties, updateState, host) => {
     }
 };
 
+// Field handling now happens in UI Builder via Data Resources
+
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 	renderer: { type: snabbdom },
 	view,
 properties: {
     predefinedCard: {
         default: '{}',
+    },
+    tableName: {
+        default: '',
+        required: false
     }
 },
 initialState: {
-designer: null,
-currentCardState: null,
-designerInitialized: false
+    status: "Initializing...",
+    designerInitialized: false,
+    currentCardState: null,
+    designer: null,
+    tableFields: []
 },
 	actionHandlers: {
 		[actionTypes.COMPONENT_CONNECTED]: ({
@@ -471,15 +550,39 @@ designerInitialized: false
 			host,
 			properties,
 		}) => {
+            if (properties.tableName) {
+                fetchTableFields(properties.tableName).then(fields => {
+                    updateState({ tableFields: fields });
+                });
+            }
 			initializeDesigner(properties, updateState, host);
 		},
 [actionTypes.COMPONENT_PROPERTY_CHANGED]: async ({
-action,
-state,
-updateState,
+    action,
+    state,
+    updateState,
+    dispatch
 }) => {
-const { propertyName, newValue } = action.payload;
-if (propertyName === "predefinedCard") {
+    const { propertyName, newValue } = action.payload;
+    
+    if (propertyName === "fields") {
+        // Parse the fields from the data resource format
+        const parsedFields = newValue?.results?.map(field => ({
+            name: field.sys_name?.value,
+            label: field.column_label?.value || field.sys_name?.value,
+            type: field.internal_type?.value,
+            isReference: field.internal_type?.value === 'reference',
+            referenceTable: field.reference?.value,
+            displayValue: field.sys_name?.displayValue
+        })).filter(f => 
+            // Filter out null/undefined fields and certain types we don't want to show
+            f?.name && 
+            f?.type && 
+            !['collection', 'journal_list'].includes(f.type)
+        ) || [];
+
+        updateState({ fields: parsedFields });
+    } else if (propertyName === "predefinedCard") {
     console.log('Property change detected:', { propertyName, newValue });
     if (newValue && state.designer) {
         console.log('Updating card with new value:', newValue);
@@ -529,6 +632,18 @@ if (propertyName === "predefinedCard") {
     if (host.shadowRoot) {
         host.shadowRoot.innerHTML = '';
     }
-}
+},
+'FIELD_PICKED': ({action, dispatch}) => {
+        const field = action.payload;
+        // Dispatch event that UI Builder can listen for
+        dispatch('FIELD_SELECTED', {
+            payload: {
+                name: field.name,
+                label: field.label,
+                type: field.type,
+                isReference: field.isReference
+            }
+        });
+    }
 },
 });
