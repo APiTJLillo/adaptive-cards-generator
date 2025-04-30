@@ -58,12 +58,12 @@ const view = (state, { updateState, dispatch }) => {
 	} = state || {};
 
 	// Trigger setup of field pickers when view renders if designer is ready
-	if (designerInitialized && designer) {
-		setTimeout(() => {
-			console.log("View rendered, setting up field pickers");
-			addFieldPickersToDesigner(designer, tableFields || []);
-		}, 0);
-	}
+	// if (designerInitialized && designer) {
+	// 	setTimeout(() => {
+	// 		console.log("View rendered, setting up field pickers");
+	// 		addFieldPickersToDesigner(designer, tableFields || []);
+	// 	}, 0);
+	// }
 
 	// Return a basic wrapper that will be populated by the designer
 	const wrapper = {
@@ -671,31 +671,45 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 			updateState,
 			dispatch,
 		}) => {
-			const { name, value } = action.payload;
+            const { name, value } = action.payload;
 				console.log("Property changed:", { name, value });
 
 			if (name === "fields" && Array.isArray(value)) {
-				// Parse fields from the data resource format
+				// --- BEGIN LOGGING ---
+				console.log("COMPONENT_PROPERTY_CHANGED: Received fields update. Raw value:", JSON.stringify(value, null, 2));
+				// --- END LOGGING ---
+				// Parse fields - UPDATED LOGIC to match COMPONENT_CONNECTED
 				const parsedFields =
 					value?.map((field) => ({
-							name: field.sys_name,
-							label: field.column_label || field.sys_name,
-							type: field.internal_type,
-							isReference: field.internal_type === "reference",
-							referenceTable: field.reference,
-							displayValue: field.sys_name,
+							name: field.sys_name?.displayValue, // Use .displayValue
+							label: field.column_label?.displayValue || field.sys_name?.displayValue, // Use .displayValue
+							type: field.internal_type?.displayValue, // Use .displayValue
+							// Add nullish coalescing for safety
+							// isReference: (field.internal_type?.displayValue ?? '') === "reference",
+							// referenceTable: field.reference?.displayValue, // Use .displayValue
+							// displayValue: field.sys_name?.displayValue, // Use .displayValue
+							// Simplified based on original structure - adjust if needed
+                            isReference: field.internal_type?.displayValue === "Reference", // Corrected case
+                            referenceTable: field.reference?.displayValue,
+                            displayValue: field.sys_name?.displayValue,
 						}))
 						.filter(
 							(f) =>
 								// Filter out null/undefined fields and certain types we don't want to show
-								f?.name &&
-								f?.type &&
-								!["collection", "journal_list"].includes(f.type)
+								// Add checks for potentially undefined displayValues
+								// f?.name &&
+								// f?.type &&
+								// !["collection", "journal_list"].includes(f.type ?? '')
+								// Simplified based on original structure - adjust if needed
+                                f?.name &&
+                                f?.type &&
+                                !["collection", "journal_list"].includes(f.type)
 						) || [];
+				// --- BEGIN LOGGING ---
+				console.log("COMPONENT_PROPERTY_CHANGED: Parsed fields (Updated Logic):", JSON.stringify(parsedFields, null, 2));
+				// --- END LOGGING ---
 
-				updateState({ tableFields: parsedFields });
-
-				// Add field pickers if designer is initialized
+				updateState({ tableFields: parsedFields });			// Add field pickers if designer is initialized
 				if (state.designer) {
 					addFieldPickersToDesigner(state.designer, parsedFields);
 				}
@@ -774,6 +788,11 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
     // Function to show field picker modal
     const showFieldPicker = (input) => {
         console.log("Showing field picker for input:", input);
+
+        // --- NEW LOGGING ---
+        console.log("showFieldPicker: availableFields at modal creation:", JSON.stringify(availableFields, null, 2));
+        // --- END NEW LOGGING ---
+
         const overlay = document.createElement("div");
         overlay.className = "acd-field-picker-overlay";
         designer.hostElement.appendChild(overlay);
@@ -825,9 +844,9 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
         };
     };
 
-    // Function to add field picker button to an input
+    // Function to add or update field picker button for an input
     const addFieldPickerToInput = (input) => {
-        console.log("Adding field picker to input:", {
+        console.log("Adding/Updating field picker for input:", {
             input: input,
             type: input.type,
             className: input.className,
@@ -836,46 +855,62 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
             parentElement: input.parentElement,
         });
 
-        if (input.parentNode?.className === "property-input-wrapper") {
-            console.log("Input already wrapped, skipping");
-            return;
-        }
-
         const isTextInput = input.matches('input[type="text"], textarea, select');
         const propertiesPane = input.closest("#propertySheetPanel");
-        console.log("Input validation:", {
-            isTextInput,
-            hasPropertiesPane: !!propertiesPane,
-            parentElements: Array.from(input.parentElement?.children || []).map(el => ({
-                tagName: el.tagName,
-                className: el.className,
-            }))
-        });
 
         if (!isTextInput || !propertiesPane) {
-            console.log("Input validation failed, not adding picker");
+            console.log("Input validation failed, not adding/updating picker");
             return;
         }
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "property-input-wrapper";
-        wrapper.style.position = "relative";
-        wrapper.style.display = "flex";
-        wrapper.style.alignItems = "center";
+        let wrapper = input.parentNode;
+        let button = null;
 
-        input.parentNode.insertBefore(wrapper, input);
-        wrapper.appendChild(input);
+        // Check if the input is already wrapped
+        if (wrapper?.className === "property-input-wrapper") {
+            console.log("Input already wrapped, finding existing button.");
+            button = wrapper.querySelector(".acd-field-picker-button");
+            if (button) {
+                console.log("Existing button found. Updating its click handler.");
+                // Update the existing button's click handler to use the current showFieldPicker
+                button.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showFieldPicker(input); // Use the showFieldPicker from the current scope
+                };
+                console.log("Updated click handler for existing button.");
+                return; // Button handler updated, nothing more to do for this input
+            } else {
+                console.warn("Wrapper found but button missing. Proceeding to create button.");
+                // Button missing, fall through to create it within the existing wrapper
+            }
+        } else {
+            console.log("Input not wrapped. Creating wrapper and button.");
+            // Input is not wrapped, create the wrapper
+            wrapper = document.createElement("div");
+            wrapper.className = "property-input-wrapper";
+            wrapper.style.position = "relative";
+            wrapper.style.display = "flex";
+            wrapper.style.alignItems = "center";
 
-        const button = document.createElement("button");
-        button.className = "acd-field-picker-button";
-        button.title = "Insert field reference";
-        button.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showFieldPicker(input);
-        };
-        wrapper.appendChild(button);
-        console.log("Added field picker button to input");
+            // Insert the wrapper before the input and move the input inside
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+        }
+
+        // Create the button if it wasn't found or if the wrapper was just created
+        if (!button) {
+            button = document.createElement("button");
+            button.className = "acd-field-picker-button";
+            button.title = "Insert field reference";
+            button.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showFieldPicker(input); // Use the showFieldPicker from the current scope
+            };
+            wrapper.appendChild(button);
+            console.log("Added new field picker button to input/wrapper.");
+        }
     };
 
     // Initialize mutation observer
