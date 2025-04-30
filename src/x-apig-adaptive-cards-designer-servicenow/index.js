@@ -639,12 +639,12 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				if (properties.fields && Array.isArray(properties.fields)) {
 					const parsedFields = properties.fields
 						.map((field) => ({
-							name: field.sys_name?.value,
-							label: field.column_label?.value || field.sys_name?.value,
-							type: field.internal_type?.value,
-							isReference: field.internal_type?.value === "reference",
-							referenceTable: field.reference?.value,
-							displayValue: field.sys_name?.displayValue,
+							name: field.sys_name.displayValue,
+							label: field.column_label.displayValue || field.sys_name.displayValue,
+							type: field.internal_type.displayValue,
+							isReference: field.internal_type.displayValue === "reference",
+							referenceTable: field.reference.displayValue,
+							displayValue: field.sys_name.displayValue,
 						}))
 						.filter(
 							(f) =>
@@ -671,19 +671,19 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 			updateState,
 			dispatch,
 		}) => {
-			const { propertyName, newValue } = action.payload;
+			const { name, value } = action.payload;
+				console.log("Property changed:", { name, value });
 
-			if (propertyName === "fields" && Array.isArray(newValue)) {
+			if (name === "fields" && Array.isArray(value)) {
 				// Parse fields from the data resource format
 				const parsedFields =
-					newValue?.results
-						?.map((field) => ({
-							name: field.sys_name?.value,
-							label: field.column_label?.value || field.sys_name?.value,
-							type: field.internal_type?.value,
-							isReference: field.internal_type?.value === "reference",
-							referenceTable: field.reference?.value,
-							displayValue: field.sys_name?.displayValue,
+					value?.map((field) => ({
+							name: field.sys_name,
+							label: field.column_label || field.sys_name,
+							type: field.internal_type,
+							isReference: field.internal_type === "reference",
+							referenceTable: field.reference,
+							displayValue: field.sys_name,
 						}))
 						.filter(
 							(f) =>
@@ -700,11 +700,11 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 					addFieldPickersToDesigner(state.designer, parsedFields);
 				}
 			} else if (
-				propertyName === "predefinedCard" &&
+				name === "predefinedCard" &&
 				state.designerInitialized &&
 				state.designer
 			) {
-				console.log("Updating card with new value:", newValue);
+				console.log("Updating card with new value:", value);
 				const maxRetries = 3;
 				let lastError = null;
 
@@ -714,7 +714,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 						await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
 
 						const cardData =
-							typeof newValue === "string" ? JSON.parse(newValue) : newValue;
+							typeof value === "string" ? JSON.parse(value) : value;
 
 						console.log(
 							`Setting card (attempt ${i + 1}/${maxRetries}):`,
@@ -789,15 +789,22 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
             availableFields.forEach((field) => {
                 const item = document.createElement("div");
                 item.className = "acd-field-item";
-                item.textContent = `${field.column_label?.value || field.sys_name?.value} (${field.sys_name?.value})`;
+                item.textContent = `${field.label || field.name} (${field.name})`;
                 item.onclick = () => {
-                    const reference = field.internal_type?.value === "reference"
-                        ? `\${current.${field.sys_name?.value}.display_value}`
-                        : `\${current.${field.sys_name?.value}}`;
+                    const reference = field.isReference
+                        ? `\${current.${field.name}.display_value}`
+                        : `\${current.${field.name}}`;
 
                     console.log("Field selected:", { field, reference });
 
-                    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+                    if (input instanceof HTMLSelectElement) {
+                        // Add option if it doesn't exist
+                        if (![...input.options].some(o => o.value === reference)) {
+                            input.add(new Option(reference, reference));
+                        }
+                        input.value = reference;
+                        input.dispatchEvent(new Event("change", { bubbles: true }));
+                    } else if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
                         const start = input.selectionStart ?? 0;
                         const end = input.selectionEnd ?? start;
                         input.value = input.value.substring(0, start) + reference + input.value.substring(end);
@@ -834,7 +841,7 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
             return;
         }
 
-        const isTextInput = input.matches('input[type="text"], textarea');
+        const isTextInput = input.matches('input[type="text"], textarea, select');
         const propertiesPane = input.closest("#propertySheetPanel");
         console.log("Input validation:", {
             isTextInput,
@@ -893,7 +900,7 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
                         node: node,
                         className: node.className
                     });
-                    const inputs = node.querySelectorAll('input[type="text"], textarea');
+                    const inputs = node.querySelectorAll('input[type="text"], textarea, select');
                     console.log(`Found ${inputs.length} inputs in added node`);
                     inputs.forEach(input => addFieldPickerToInput(input));
                 }
@@ -927,7 +934,7 @@ const addFieldPickersToDesigner = (designer, tableFields) => {
         });
         console.log("Started observing properties pane");
 
-        const existingInputs = propertiesPane.querySelectorAll('input[type="text"], textarea');
+        const existingInputs = propertiesPane.querySelectorAll('input[type="text"], textarea, select');
         console.log(`Found ${existingInputs.length} existing inputs`);
         existingInputs.forEach(input => addFieldPickerToInput(input));
     };
