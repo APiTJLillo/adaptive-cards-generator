@@ -6,28 +6,35 @@
         {
           "name": "predefinedCard",
           "label": "Card JSON",
-          "description": "JSON data for the Adaptive Card",
+          "description": "The initial JSON configuration for the Adaptive Card",
           "readOnly": false,
-          "fieldType": "string",
           "required": false,
-          "defaultValue": "{}"
+          "type": "object",
+          "defaultValue": {}
         },
         {
           "name": "tableName",
           "label": "Table Name",
-          "description": "The name of the table to fetch fields from",
+          "description": "The name of the table to be used for the card.",
           "readOnly": false,
-          "fieldType": "string",
           "required": false,
+          "type": "string",
           "defaultValue": ""
         },
         {
           "name": "fields",
           "label": "Available Fields",
-          "description": "Array of field definitions from the table",
-          "fieldType": "array",
+          "description": "The fields available for the card.",
+          "readOnly": false,
           "required": false,
-          "defaultValue": "[]"
+          "defaultValue": [],
+          "type": "array",
+          "itemType": "object",
+          "binding": {
+            "type": "data_resource",
+            "resource": "sys_dictionary",
+            "transform": "table_fields"
+          }
         }
       ],
       "uiBuilder": {
