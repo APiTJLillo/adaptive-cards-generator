@@ -1,7 +1,8 @@
 export const addFieldPickersToDesigner = (designer, tableFields) => {
     console.log("addFieldPickersToDesigner called with:", {
         designer: designer,
-        tableFields: tableFields,
+        tableFieldsCount: tableFields?.length || 0,
+        tableFieldsExample: tableFields?.length > 0 ? tableFields[0] : null,
         designerHostElement: designer?.hostElement,
         designerProperties: {
             isToolboxInitialized: designer?._toolboxInitialized,
@@ -17,14 +18,23 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
 
     // Initialize tableFields as empty array if not provided
     const availableFields = Array.isArray(tableFields) ? tableFields : [];
+    
+    // Log full fields details to help debug
+    console.log("Field picker available fields:", JSON.stringify(availableFields, null, 2));
 
     // Function to show field picker modal
     const showFieldPicker = (input) => {
         console.log("Showing field picker for input:", input);
 
-        // --- NEW LOGGING ---
-        console.log("showFieldPicker: availableFields at modal creation:", JSON.stringify(availableFields, null, 2));
-        // --- END NEW LOGGING ---
+        console.log("showFieldPicker: availableFields at modal creation:", 
+                    "Count:", availableFields.length,
+                    "Fields:", JSON.stringify(availableFields, null, 2));
+                    
+        // Double check that we have the designer host element
+        if (!designer.hostElement) {
+            console.error("Designer host element is missing, cannot show field picker");
+            return;
+        }
 
         const overlay = document.createElement("div");
         overlay.className = "acd-field-picker-overlay";
@@ -32,22 +42,38 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
 
         const modal = document.createElement("div");
         modal.className = "acd-field-picker-modal";
-        modal.innerHTML = availableFields.length > 0
-            ? '<div style="font-weight: bold; margin-bottom: 8px;">Select a field to insert:</div>'
-            : '<div style="font-weight: bold; margin-bottom: 8px;">No fields available</div><div>Please select fields in the configuration panel.</div>';
+        
+        if (availableFields.length > 0) {
+            modal.innerHTML = '<div style="font-weight: bold; margin-bottom: 8px;">Select a field to insert:</div>';
+            console.log("Created modal with fields heading");
+        } else {
+            modal.innerHTML = '<div style="font-weight: bold; margin-bottom: 8px;">No fields available</div>' + 
+                             '<div>Please select fields in the configuration panel.</div>';
+            console.log("Created modal with no fields message");
+        }
+        
         designer.hostElement.appendChild(modal);
 
         if (availableFields.length > 0) {
-            availableFields.forEach((field) => {
+            availableFields.forEach((field, index) => {
+                if (!field || !field.name) {
+                    console.error(`Invalid field at index ${index}:`, field);
+                    return; // Skip this field
+                }
+                
                 const item = document.createElement("div");
                 item.className = "acd-field-item";
                 item.textContent = `${field.label || field.name} (${field.name})`;
+                
+                // Log whether this field is a reference field
+                console.log(`Field ${field.name} isReference:`, field.isReference, "Type:", field.type);
+                
                 item.onclick = () => {
                     const reference = field.isReference
                         ? `\${current.${field.name}.display_value}`
                         : `\${current.${field.name}}`;
 
-                    console.log("Field selected:", { field, reference });
+                    console.log("Field selected:", { field, reference, isRef: field.isReference });
 
                     if (input instanceof HTMLSelectElement) {
                         // Add option if it doesn't exist
@@ -146,9 +172,19 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
         }
     };
 
+    // Before we set up the observer, check if fields are available
+    if (availableFields.length === 0) {
+        console.warn("No fields available for field picker. This might cause issues when trying to pick fields.");
+    }
+    
     // Initialize mutation observer
     const observer = new MutationObserver((mutations) => {
         console.log("Mutation observer triggered:", mutations.length, "mutations");
+        // Re-check field availability on DOM changes in case fields were updated
+        if (availableFields.length === 0) {
+            console.warn("No fields available during mutation observer callback");
+        }
+        
         mutations.forEach((mutation) => {
             const propertiesPane = mutation.target.closest("#propertySheetPanel");
             if (!propertiesPane) {

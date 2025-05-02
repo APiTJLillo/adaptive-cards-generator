@@ -13,22 +13,33 @@ export const processTableFields = (fieldsData) => {
         return [];
     }
 
-    return fieldsData
-        .map((field) => ({
-            name: field.sys_name?.displayValue,
+    // Ensure we handle the data properly with additional logging
+    console.log("Processing fields data:", fieldsData.slice(0, 2));
+    
+    const mappedFields = fieldsData.map(field => {
+        const internalType = field.internal_type?.displayValue;
+        // Check both lowercase and capitalized versions of "reference"
+        const isRef = internalType === "reference" || internalType === "Reference";
+        
+        return {
+            name: field.element?.displayValue,
             label: field.column_label?.displayValue || field.sys_name?.displayValue,
-            type: field.internal_type?.displayValue,
-            isReference: field.internal_type?.displayValue === "reference",
+            type: internalType,
+            isReference: isRef,
             referenceTable: field.reference?.displayValue,
             displayValue: field.sys_name?.displayValue,
-        }))
-        .filter(
-            (f) =>
-                // Filter out null/undefined fields and certain types we don't want to show
-                f?.name &&
-                f?.type &&
-                !["collection", "journal_list"].includes(f.type)
-        );
+        };
+    });
+    
+    console.log("Field mapping example:", mappedFields.length > 0 ? mappedFields[0] : "No fields");
+    
+    return mappedFields.filter(
+        (f) =>
+            // Filter out null/undefined fields and certain types we don't want to show
+            f?.name &&
+            f?.type &&
+            !["collection", "journal_list"].includes(f.type)
+    );
 };
 
 /**

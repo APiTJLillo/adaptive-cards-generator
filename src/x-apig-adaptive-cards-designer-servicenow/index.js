@@ -46,22 +46,49 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 			state,
 		}) => {
 			try {
+				console.log("COMPONENT_CONNECTED: Starting with properties:", {
+				    hasFields: !!properties.fields,
+				    fieldsIsArray: Array.isArray(properties.fields),
+				    fieldsLength: Array.isArray(properties.fields) ? properties.fields.length : 'N/A',
+				    fieldsType: typeof properties.fields
+				});
+				
 				// First initialize the designer
 				const designer = await initializeDesigner(
 					properties,
 					updateState,
 					host
 				);
+				
+				console.log("COMPONENT_CONNECTED: Designer initialized:", !!designer);
 
 				// After designer is initialized, handle fields if provided
-				if (properties.fields && Array.isArray(properties.fields)) {
-					const parsedFields = processTableFields(properties.fields);
+				if (properties.fields) {
+					console.log("COMPONENT_CONNECTED: Processing fields data");
+					
+					// Ensure we handle both array and non-array cases
+					const fieldsArray = Array.isArray(properties.fields) ? properties.fields : 
+					                   (typeof properties.fields === 'object' && properties.fields !== null) ? 
+					                   [properties.fields] : [];
+					                   
+					// Process the fields
+					const parsedFields = processTableFields(fieldsArray);
+					
+					console.log("COMPONENT_CONNECTED: Processed fields count:", parsedFields.length);
+					if (parsedFields.length > 0) {
+					    console.log("COMPONENT_CONNECTED: First processed field:", JSON.stringify(parsedFields[0], null, 2));
+					}
+					
 					updateState({ tableFields: parsedFields });
 
 					// Add field pickers to the designer right away since we have the instance
 					if (designer) {
 						addFieldPickersToDesigner(designer, parsedFields);
+					} else {
+						console.warn("Designer not properly initialized, field pickers couldn't be added");
 					}
+				} else {
+					console.log("COMPONENT_CONNECTED: No fields provided in properties");
 				}
 			} catch (error) {
 				console.error("Error in COMPONENT_CONNECTED:", error);
@@ -74,21 +101,33 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 			dispatch,
 		}) => {
             const { name, value } = action.payload;
-				console.log("Property changed:", { name, value });
+            console.log("Property changed:", { name, value, valueType: typeof value });
 
-			if (name === "fields" && Array.isArray(value)) {
-				console.log("COMPONENT_PROPERTY_CHANGED: Received fields update. Raw value:", JSON.stringify(value, null, 2));
+			if (name === "fields" && value) {
+				console.log("COMPONENT_PROPERTY_CHANGED: Received fields update. Raw value type:", typeof value, 
+				            "Is array?", Array.isArray(value),
+				            "Length:", Array.isArray(value) ? value.length : 'N/A',
+				            "Sample:", Array.isArray(value) && value.length > 0 ? JSON.stringify(value[0], null, 2) : 'No items');
 				
-				// Process the fields using our utility function
-				const parsedFields = processTableFields(value);
+				// Process the fields using our utility function - ensure we're passing an array
+				const fieldsArray = Array.isArray(value) ? value : 
+				                   (typeof value === 'object' && value !== null) ? [value] : [];
+				                   
+				const parsedFields = processTableFields(fieldsArray);
 				
-				console.log("COMPONENT_PROPERTY_CHANGED: Parsed fields:", JSON.stringify(parsedFields, null, 2));
+				console.log("COMPONENT_PROPERTY_CHANGED: Parsed fields count:", parsedFields.length);
+				if (parsedFields.length > 0) {
+				    console.log("COMPONENT_PROPERTY_CHANGED: First parsed field:", JSON.stringify(parsedFields[0], null, 2));
+				}
 				
+				// Update state with the new fields
 				updateState({ tableFields: parsedFields });
 				
 				// Add field pickers if designer is initialized
 				if (state.designer) {
 					addFieldPickersToDesigner(state.designer, parsedFields);
+				} else {
+					console.warn("Designer not initialized yet, field pickers will be added when it's ready");
 				}
 			} else if (
 				name === "predefinedCard" &&
