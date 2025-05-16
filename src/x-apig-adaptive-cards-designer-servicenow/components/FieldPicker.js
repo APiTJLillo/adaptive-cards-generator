@@ -16,8 +16,22 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
         return;
     }
 
+    // Disconnect any previously registered observer to avoid duplicate
+    // callbacks which could reference stale field data
+    if (designer._fieldPickerObserver) {
+        try {
+            designer._fieldPickerObserver.disconnect();
+        } catch (e) {
+            console.warn("Failed to disconnect old field picker observer", e);
+        }
+        designer._fieldPickerObserver = null;
+    }
+
     // Initialize tableFields as empty array if not provided
+    // Store available fields on the designer so click handlers always use
+    // the latest values even if they were created before fields loaded.
     const availableFields = Array.isArray(tableFields) ? tableFields : [];
+    designer._availableFieldPickerFields = availableFields;
     
     // Log full fields details to help debug
     console.log("Field picker available fields:", JSON.stringify(availableFields, null, 2));
@@ -26,9 +40,12 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
     const showFieldPicker = (input) => {
         console.log("Showing field picker for input:", input);
 
-        console.log("showFieldPicker: availableFields at modal creation:", 
-                    "Count:", availableFields.length,
-                    "Fields:", JSON.stringify(availableFields, null, 2));
+        const fieldsForModal = designer._availableFieldPickerFields || [];
+        console.log(
+            "showFieldPicker: availableFields at modal creation:",
+            "Count:", fieldsForModal.length,
+            "Fields:", JSON.stringify(fieldsForModal, null, 2)
+        );
                     
         // Double check that we have the designer host element
         if (!designer.hostElement) {
@@ -43,7 +60,7 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
         const modal = document.createElement("div");
         modal.className = "acd-field-picker-modal";
         
-        if (availableFields.length > 0) {
+        if (fieldsForModal.length > 0) {
             modal.innerHTML = '<div style="font-weight: bold; margin-bottom: 8px;">Select a field to insert:</div>';
             console.log("Created modal with fields heading");
         } else {
@@ -54,8 +71,8 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
         
         designer.hostElement.appendChild(modal);
 
-        if (availableFields.length > 0) {
-            availableFields.forEach((field, index) => {
+        if (fieldsForModal.length > 0) {
+            fieldsForModal.forEach((field, index) => {
                 if (!field || !field.name) {
                     console.error(`Invalid field at index ${index}:`, field);
                     return; // Skip this field
@@ -181,7 +198,7 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
     const observer = new MutationObserver((mutations) => {
         console.log("Mutation observer triggered:", mutations.length, "mutations");
         // Re-check field availability on DOM changes in case fields were updated
-        if (availableFields.length === 0) {
+        if ((designer._availableFieldPickerFields || []).length === 0) {
             console.warn("No fields available during mutation observer callback");
         }
         
@@ -211,6 +228,8 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
             });
         });
     });
+    // store observer on designer so it can be cleaned up on subsequent calls
+    designer._fieldPickerObserver = observer;
 
     // Set up field pickers
     const setupFieldPickers = () => {
