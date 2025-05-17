@@ -45,20 +45,31 @@
           "defaultValue": [],
           "type": "array",
           "itemType": "object"
+        },
+        {
+          "name": "referenceTable",
+          "label": "Reference Table",
+          "description": "The table from which reference fields are loaded.",
+          "readOnly": false,
+          "required": false,
+          "type": "string",
+          "defaultValue": ""
         }
       ],
-      "events": [
+      "actions": [
         {
           "name": "reference-table-requested",
           "description": "Emitted when a reference field arrow is clicked",
-          "payload": {
-            "type": "object",
-            "properties": {
-              "tableName": {
-                "type": "string"
-              }
+          "label": "Reference Table Requested",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "Name of the referenced table",
+              "type": "string"
             }
-          }
+          ]
         }
       ],
       "uiBuilder": {
