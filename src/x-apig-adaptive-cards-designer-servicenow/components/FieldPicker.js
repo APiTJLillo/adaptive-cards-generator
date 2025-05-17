@@ -98,16 +98,6 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     arrow.onclick = (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
-                        designer._awaitingReferenceFields = true;
-                        designer._desiredReferenceTable = field.referenceTable;
-                        if (designer._fieldPickerOverlay) designer._fieldPickerOverlay.remove();
-                        if (designer._fieldPickerModal) designer._fieldPickerModal.remove();
-                        const event = new CustomEvent("reference-table-requested", {
-                            bubbles: true,
-                            composed: true,
-                            detail: { tableName: field.referenceTable }
-                        });
-                        designer.hostElement.dispatchEvent(event);
                         if (typeof dispatch === "function") {
                             dispatch("reference-table-requested", { tableName: field.referenceTable });
                         }

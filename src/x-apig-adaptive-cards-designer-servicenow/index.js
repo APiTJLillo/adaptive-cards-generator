@@ -125,7 +125,6 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                         updateState({ referenceFields: parsedFields });
 
                                         if (designer) {
-                                                designer._availableFieldPickerFields = parsedFields;
                                                 addFieldPickersToDesigner(designer, parsedFields, dispatch);
                                         }
                                 }
@@ -180,12 +179,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 updateState({ referenceFields: parsedFields });
 
                                 if (state.designer) {
-                                        state.designer._availableFieldPickerFields = parsedFields;
                                         addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
-                                        if (state.designer._awaitingReferenceFields && state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
-                                                state.designer._awaitingReferenceFields = false;
-                                                state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
-                                        }
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }
