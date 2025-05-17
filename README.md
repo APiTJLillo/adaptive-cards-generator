@@ -4,6 +4,7 @@ Design adaptive cards with a UI Builder component.
 
 ### Reference field navigation
 
+
 Reference type fields displayed in the picker now include an arrow button. When
 clicked the component dispatches a `reference-table-requested` event bubbling
 from the component's root. The event detail follows the `type`/`payload`
