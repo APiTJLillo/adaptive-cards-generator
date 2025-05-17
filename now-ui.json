@@ -49,6 +49,22 @@
       ],
       "actions": [
         {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Request to load fields for a referenced table",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "Name of the referenced table to fetch fields from",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
           "name": "REFERENCE_TABLE_REQUESTED",
           "label": "Reference Table Requested",
           "description": "Emitted when a reference field arrow is clicked",
