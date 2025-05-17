@@ -85,7 +85,9 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
                 // Log whether this field is a reference field
                 console.log(`Field ${field.name} isReference:`, field.isReference, "Type:", field.type);
                 
-                item.onclick = () => {
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const reference = field.isReference
                         ? `\${current.${field.name}.display_value}`
                         : `\${current.${field.name}}`;
@@ -114,7 +116,9 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
             });
         }
 
-        overlay.onclick = () => {
+        overlay.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             overlay.remove();
             modal.remove();
         };
