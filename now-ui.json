@@ -45,6 +45,15 @@
           "defaultValue": [],
           "type": "array",
           "itemType": "object"
+        },
+        {
+          "name": "referenceTable",
+          "label": "Reference Table",
+          "description": "The table from which reference fields are loaded.",
+          "readOnly": false,
+          "required": false,
+          "type": "string",
+          "defaultValue": ""
         }
       ],
       "actions": [
