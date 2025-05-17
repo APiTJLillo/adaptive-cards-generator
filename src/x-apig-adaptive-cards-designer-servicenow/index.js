@@ -101,7 +101,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 
 					// Add field pickers to the designer right away since we have the instance
 					if (designer) {
-						addFieldPickersToDesigner(designer, parsedFields);
+                                                addFieldPickersToDesigner(designer, parsedFields, dispatch);
 					} else {
 						console.warn("Designer not properly initialized, field pickers couldn't be added");
 					}
@@ -118,7 +118,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                         updateState({ tableFields: parsedFields });
 
                                         if (designer) {
-                                                addFieldPickersToDesigner(designer, parsedFields);
+                                                addFieldPickersToDesigner(designer, parsedFields, dispatch);
                                         }
                                 }
 			} catch (error) {
@@ -156,7 +156,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				
 				// Add field pickers if designer is initialized
                                 if (state.designer) {
-                                        addFieldPickersToDesigner(state.designer, parsedFields);
+                                        addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }
@@ -168,7 +168,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 updateState({ tableFields: parsedFields });
 
                                 if (state.designer) {
-                                        addFieldPickersToDesigner(state.designer, parsedFields);
+                                        addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }

@@ -1,4 +1,4 @@
-export const addFieldPickersToDesigner = (designer, tableFields) => {
+export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
     console.log("addFieldPickersToDesigner called with:", {
         designer: designer,
         tableFieldsCount: tableFields?.length || 0,
@@ -100,6 +100,12 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
                             detail: { tableName: field.referenceTable }
                         });
                         designer.hostElement.dispatchEvent(event);
+                        if (typeof dispatch === "function") {
+                            dispatch({
+                                type: "reference-table-requested",
+                                payload: { tableName: field.referenceTable },
+                            });
+                        }
                     };
                     item.appendChild(arrow);
                 }
