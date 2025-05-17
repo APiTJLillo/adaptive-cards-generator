@@ -38,6 +38,8 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
 
     // Function to show field picker modal
     const showFieldPicker = (input) => {
+        designer._showFieldPicker = showFieldPicker;
+        designer._lastFieldPickerInput = input;
         console.log("Showing field picker for input:", input);
 
         const fieldsForModal = designer._availableFieldPickerFields || [];
@@ -56,6 +58,7 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
         const overlay = document.createElement("div");
         overlay.className = "acd-field-picker-overlay";
         designer.hostElement.appendChild(overlay);
+        designer._fieldPickerOverlay = overlay;
 
         const modal = document.createElement("div");
         modal.className = "acd-field-picker-modal";
@@ -70,6 +73,7 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
         }
         
         designer.hostElement.appendChild(modal);
+        designer._fieldPickerModal = modal;
 
         if (fieldsForModal.length > 0) {
             fieldsForModal.forEach((field, index) => {
@@ -94,8 +98,18 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     arrow.onclick = (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
+                        const eventDetail = {
+                            type: "reference-table-requested",
+                            payload: { tableName: field.referenceTable }
+                        };
+                        const event = new CustomEvent("reference-table-requested", {
+                            bubbles: true,
+                            composed: true,
+                            detail: eventDetail
+                        });
+                        designer.hostElement.dispatchEvent(event);
                         if (typeof dispatch === "function") {
-                            dispatch("reference-table-requested", { tableName: field.referenceTable });
+                            dispatch(eventDetail);
                         }
                     };
                     item.appendChild(arrow);
@@ -128,6 +142,8 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
 
                     overlay.remove();
                     modal.remove();
+                    designer._fieldPickerOverlay = null;
+                    designer._fieldPickerModal = null;
                 };
                 modal.appendChild(item);
             });
@@ -136,6 +152,8 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
         overlay.onclick = () => {
             overlay.remove();
             modal.remove();
+            designer._fieldPickerOverlay = null;
+            designer._fieldPickerModal = null;
         };
     };
 

@@ -4,15 +4,21 @@ Design adaptive cards with a UI Builder component.
 
 ### Reference field navigation
 
-Reference type fields displayed in the picker now include an arrow button.
-Clicking the arrow dispatches the `reference-table-requested` action with a
-payload containing the referenced table name:
+
+Reference type fields displayed in the picker now include an arrow button. When
+clicked the component dispatches a `reference-table-requested` event bubbling
+from the component's root. The event detail follows the `type`/`payload`
+format expected by UI Builder and includes the referenced table name:
 
 ```javascript
-{ tableName: 'sys_user' }
+detail: {
+  type: 'reference-table-requested',
+  payload: { tableName: 'sys_user' }
+}
 ```
 
-Handle this action in UI Builder to fetch and provide the dot‑walked fields back
-through the `referenceFields` property. Both the property and the
-`reference-table-requested` action are declared in `now-ui.json` so they appear
-in the UI Builder configuration panel.
+Listen for this event in UI Builder and provide the resulting fields back to the
+component via the `referenceFields` property to update the modal with the dot
+walked table's fields. Both the property and the `reference-table-requested`
+event are declared in `now-ui.json` so they appear in the UI Builder
+configuration panel.
