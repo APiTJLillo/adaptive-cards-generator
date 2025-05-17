@@ -61,6 +61,21 @@
           }
         }
       ],
+      "actions": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Fired when navigating to a referenced table",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "type": "string"
+            }
+          ]
+        }
+      ],
       "uiBuilder": {
         "associatedTypes": [
           "global.core",
