@@ -61,6 +61,21 @@
           }
         }
       ],
+      "actions": [
+        {
+          "name": "reference-table-requested",
+          "description": "Dispatched when requesting fields from a referenced table",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "Name of the referenced table",
+              "type": "string"
+            }
+          ]
+        }
+      ],
       "uiBuilder": {
         "associatedTypes": [
           "global.core",
