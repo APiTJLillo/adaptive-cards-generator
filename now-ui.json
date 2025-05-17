@@ -65,16 +65,18 @@
       ],
       "events": [
         {
-          "name": "reference-table-requested",
+          "name": "REFERENCE_TABLE_REQUESTED",
+          "label": "Reference Table Requested",
           "description": "Emitted when a reference field arrow is clicked",
-          "payload": {
-            "type": "object",
-            "properties": {
-              "tableName": {
-                "type": "string"
-              }
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "The referenced table to fetch fields for",
+              "type": "string"
             }
-          }
+          ]
         }
       ],
       "uiBuilder": {
