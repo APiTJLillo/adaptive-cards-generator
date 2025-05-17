@@ -109,7 +109,10 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         });
                         designer.hostElement.dispatchEvent(event);
                         if (typeof dispatch === "function") {
-                            dispatch(eventDetail);
+                            dispatch({
+                                type: "reference-table-requested",
+                                payload: { tableName: field.referenceTable }
+                            });
                         }
                     };
                     item.appendChild(arrow);
