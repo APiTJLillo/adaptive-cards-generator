@@ -31,4 +31,4 @@ jobs:
         run: npm install
 
       - name: Deploy UI Component
-        run: snc ui-component deploy --profile github-ci --force
+        run: snc ui-component deploy --profile github-ci
