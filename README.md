@@ -15,6 +15,7 @@ detail: { tableName: 'sys_user' }
 
 Listen for this event in UI Builder and provide the resulting fields back to the
 component via the `referenceFields` property to update the modal with the dot
-walked table's fields. Both the property and the `reference-table-requested`
-event are declared in `now-ui.json` so they appear in the UI Builder
-configuration panel.
+walked table's fields. The event is declared as an action in `now-ui.json` so it
+appears in the UI Builder configuration panel along with the corresponding
+`referenceFields` property.
+
