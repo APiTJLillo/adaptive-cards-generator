@@ -89,6 +89,13 @@ export const designerStyles = `
         cursor: pointer;
         border-radius: 3px;
     }
+
+    .acd-field-reference-arrow {
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
     
     .acd-field-item:hover {
         background: #f4f4f4;

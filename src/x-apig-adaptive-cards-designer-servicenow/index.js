@@ -8,9 +8,19 @@ import { processTableFields, processCardData } from './util/servicenow-data-proc
 
 // Main component definition
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
-	renderer: { type: snabbdom },
-	view,
-	properties: {
+        renderer: { type: snabbdom },
+        view,
+        outputs: {
+                "reference-table-requested": {
+                        schema: {
+                                type: "object",
+                                properties: {
+                                        tableName: { type: "string" }
+                                }
+                        }
+                }
+        },
+        properties: {
 		predefinedCard: {
 			schema: { type: "object" },
 			default: {},
@@ -20,15 +30,23 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 			default: "",
 			required: false,
 		},
-		fields: {
-			schema: {
-				type: "array",
-				items: { type: "object" },
-			},
-			default: [],
-			required: false,
-		},
-	},
+                fields: {
+                        schema: {
+                                type: "array",
+                                items: { type: "object" },
+                        },
+                        default: [],
+                        required: false,
+                },
+                referenceFields: {
+                        schema: {
+                                type: "array",
+                                items: { type: "object" },
+                        },
+                        default: [],
+                        required: false,
+                },
+        },
 	initialState: {
 		status: "Initializing...",
 		designerInitialized: false,
@@ -63,7 +81,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				console.log("COMPONENT_CONNECTED: Designer initialized:", !!designer);
 
 				// After designer is initialized, handle fields if provided
-				if (properties.fields) {
+                                if (properties.fields) {
 					console.log("COMPONENT_CONNECTED: Processing fields data");
 					
 					// Ensure we handle both array and non-array cases
@@ -87,9 +105,22 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 					} else {
 						console.warn("Designer not properly initialized, field pickers couldn't be added");
 					}
-				} else {
-					console.log("COMPONENT_CONNECTED: No fields provided in properties");
-				}
+                                } else {
+                                        console.log("COMPONENT_CONNECTED: No fields provided in properties");
+                                }
+
+                                if (properties.referenceFields) {
+                                        const fieldsArray = Array.isArray(properties.referenceFields) ? properties.referenceFields :
+                                                               (typeof properties.referenceFields === 'object' && properties.referenceFields !== null) ?
+                                                               [properties.referenceFields] : [];
+
+                                        const parsedFields = processTableFields(fieldsArray);
+                                        updateState({ tableFields: parsedFields });
+
+                                        if (designer) {
+                                                addFieldPickersToDesigner(designer, parsedFields);
+                                        }
+                                }
 			} catch (error) {
 				console.error("Error in COMPONENT_CONNECTED:", error);
 			}
@@ -103,7 +134,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
             const { name, value } = action.payload;
             console.log("Property changed:", { name, value, valueType: typeof value });
 
-			if (name === "fields" && value) {
+                        if (name === "fields" && value) {
 				console.log("COMPONENT_PROPERTY_CHANGED: Received fields update. Raw value type:", typeof value, 
 				            "Is array?", Array.isArray(value),
 				            "Length:", Array.isArray(value) ? value.length : 'N/A',
@@ -124,16 +155,28 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				updateState({ tableFields: parsedFields });
 				
 				// Add field pickers if designer is initialized
-				if (state.designer) {
-					addFieldPickersToDesigner(state.designer, parsedFields);
-				} else {
-					console.warn("Designer not initialized yet, field pickers will be added when it's ready");
-				}
-			} else if (
-				name === "predefinedCard" &&
-				state.designerInitialized &&
-				state.designer
-			) {
+                                if (state.designer) {
+                                        addFieldPickersToDesigner(state.designer, parsedFields);
+                                } else {
+                                        console.warn("Designer not initialized yet, field pickers will be added when it's ready");
+                                }
+                        } else if (name === "referenceFields" && value) {
+                                const fieldsArray = Array.isArray(value) ? value :
+                                                   (typeof value === 'object' && value !== null) ? [value] : [];
+
+                                const parsedFields = processTableFields(fieldsArray);
+                                updateState({ tableFields: parsedFields });
+
+                                if (state.designer) {
+                                        addFieldPickersToDesigner(state.designer, parsedFields);
+                                } else {
+                                        console.warn("Designer not initialized yet, field pickers will be added when it's ready");
+                                }
+                        } else if (
+                                name === "predefinedCard" &&
+                                state.designerInitialized &&
+                                state.designer
+                        ) {
 				console.log("Updating card with new value:", value);
 				const maxRetries = 3;
 				let lastError = null;

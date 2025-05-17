@@ -80,7 +80,29 @@ export const addFieldPickersToDesigner = (designer, tableFields) => {
                 
                 const item = document.createElement("div");
                 item.className = "acd-field-item";
-                item.textContent = `${field.label || field.name} (${field.name})`;
+
+                const labelSpan = document.createElement("span");
+                labelSpan.textContent = `${field.label || field.name} (${field.name})`;
+                item.appendChild(labelSpan);
+
+                if (field.isReference && field.referenceTable) {
+                    const arrow = document.createElement("button");
+                    arrow.type = "button";
+                    arrow.className = "acd-field-reference-arrow";
+                    arrow.textContent = "→";
+                    arrow.title = `Show fields from ${field.referenceTable}`;
+                    arrow.onclick = (ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        const event = new CustomEvent("reference-table-requested", {
+                            bubbles: true,
+                            composed: true,
+                            detail: { tableName: field.referenceTable }
+                        });
+                        designer.hostElement.dispatchEvent(event);
+                    };
+                    item.appendChild(arrow);
+                }
                 
                 // Log whether this field is a reference field
                 console.log(`Field ${field.name} isReference:`, field.isReference, "Type:", field.type);
