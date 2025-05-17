@@ -1,0 +1,34 @@
+name: Deploy UI Component to ServiceNow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install ServiceNow CLI
+        run: |
+          npm install -g @servicenow/cli
+          snc extension add --name ui-component
+
+      - name: Configure ServiceNow CLI Profile
+        run: |
+          snc configure profile set -p github-ci --host ${{ secrets.SN_INSTANCE_URL }} --username ${{ secrets.SN_USERNAME }} --password ${{ secrets.SN_PASSWORD }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Deploy UI Component
+        run: snc ui-component deploy --profile github-ci
