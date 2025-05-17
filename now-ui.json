@@ -54,11 +54,24 @@
           "payload": {
             "type": "object",
             "properties": {
-              "tableName": {
-                "type": "string"
-              }
+              "tableName": { "type": "string" }
             }
           }
+        }
+      ],
+      "actions": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Dispatched when a reference field arrow is clicked",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "type": "string"
+            }
+          ]
         }
       ],
       "uiBuilder": {
