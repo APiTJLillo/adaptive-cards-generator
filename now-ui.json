@@ -120,6 +120,21 @@
           ]
         }
       ],
+      "actions": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Emitted when a reference field arrow is clicked",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "type": "string"
+            }
+          ]
+        }
+      ],
       "uiBuilder": {
         "associatedTypes": [
           "global.core",
