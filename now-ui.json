@@ -61,6 +61,22 @@
           }
         }
       ],
+      "actions": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Dispatched when the user clicks a reference field's arrow to dot walk",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "Name of the referenced table",
+              "type": "string"
+            }
+          ]
+        }
+      ],
       "uiBuilder": {
         "associatedTypes": [
           "global.core",
