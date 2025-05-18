@@ -180,6 +180,9 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 
                                 if (state.designer) {
                                         addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
+        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
+            state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
+        }
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }
