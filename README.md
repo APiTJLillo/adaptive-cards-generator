@@ -18,8 +18,17 @@ detail: {
 ```
 
 Listen for this event in UI Builder and provide the resulting fields back to the
-component via the `referenceFields` property to update the modal with the dot
-walked table's fields. The `tableName` is the technical name of the referenced
-table (e.g. `change_request`), not the display label. Both the property and the
-`reference-table-requested` event are declared in `now-ui.json` so they appear
-in the UI Builder configuration panel.
+component via the `referenceFields` property. When both the `referenceTable`
+and `referenceFields` properties are populated, the component caches the table's
+fields locally and refreshes the modal with the new options. Subsequent requests
+for the same table reuse the cached values. Both the properties and the
+`reference-table-requested` event are declared in `now-ui.json` so they appear in
+the UI Builder configuration panel.
+
+### Registering the event in the instance
+
+UI Builder only exposes events that are registered on the instance. After
+deploying the component, create a `sys_ux_event` record with the name
+`reference-table-requested` and add it to the dispatched events list on the
+component's macroponent record. Once registered you can map the event to any
+handler action on your page.
