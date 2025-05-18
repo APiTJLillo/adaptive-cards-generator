@@ -98,16 +98,23 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     arrow.onclick = (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
-                        const eventDetail = {
-                            type: "reference-table-requested",
-                            payload: { tableName: field.referenceTable }
-                        };
+                        console.log(
+                            "Reference arrow clicked for field:",
+                            field.name,
+                            "table:",
+                            field.referenceTable
+                        );
+
                         const event = new CustomEvent("reference-table-requested", {
                             bubbles: true,
                             composed: true,
-                            detail: eventDetail
+                            detail: {
+                                type: "reference-table-requested",
+                                payload: { tableName: field.referenceTable }
+                            }
                         });
                         designer.hostElement.dispatchEvent(event);
+
                         if (typeof dispatch === "function") {
                             dispatch({
                                 type: "reference-table-requested",
