@@ -35,11 +35,9 @@ handler action on your page.
 
 ### Saving and loading cards
 
-The designer emits a `CARD_STATE_CHANGED` action whenever the card JSON is
-modified. A DOM event `sn:CARD_STATE_CHANGED` is also dispatched from the
-component so it can be wired up in UI Builder. Listen for this event and persist
-the `card` payload using the ServiceNow table API or your own storage
-mechanism.
+The designer emits a `CARD_STATE_CHANGED` event whenever the card JSON is
+modified. Listen for this event and persist the `card` payload using the
+ServiceNow table API or your own storage mechanism.
 
 To load a previously saved card into the designer, dispatch the `LOAD_CARD`
 action with the card JSON:
