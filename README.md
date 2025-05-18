@@ -18,7 +18,9 @@ detail: {
 ```
 
 Listen for this event in UI Builder and provide the resulting fields back to the
-component via the `referenceFields` property to update the modal with the dot
-walked table's fields. Both the property and the `reference-table-requested`
-event are declared in `now-ui.json` so they appear in the UI Builder
-configuration panel.
+component via the `referenceFields` property. When both the `referenceTable`
+and `referenceFields` properties are populated, the component caches the table's
+fields locally and refreshes the modal with the new options. Subsequent requests
+for the same table reuse the cached values. Both the properties and the
+`reference-table-requested` event are declared in `now-ui.json` so they appear in
+the UI Builder configuration panel.

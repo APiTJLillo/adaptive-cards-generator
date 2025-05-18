@@ -40,6 +40,16 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
     const showFieldPicker = (input) => {
         designer._showFieldPicker = showFieldPicker;
         designer._lastFieldPickerInput = input;
+
+        if (designer._fieldPickerOverlay) {
+            designer._fieldPickerOverlay.remove();
+            designer._fieldPickerOverlay = null;
+        }
+        if (designer._fieldPickerModal) {
+            designer._fieldPickerModal.remove();
+            designer._fieldPickerModal = null;
+        }
+
         console.log("Showing field picker for input:", input);
 
         const fieldsForModal = designer._availableFieldPickerFields || [];
