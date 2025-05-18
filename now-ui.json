@@ -86,6 +86,20 @@
               "type": "string"
             }
           ]
+        },
+        {
+          "name": "sn:CARD_STATE_CHANGED",
+          "label": "Card State Changed",
+          "description": "Emitted when the card JSON is modified in the designer",
+          "action": "sn:CARD_STATE_CHANGED",
+          "payload": [
+            {
+              "name": "card",
+              "label": "Card Data",
+              "description": "The updated card payload",
+              "type": "object"
+            }
+          ]
         }
       ],
       "uiBuilder": {
