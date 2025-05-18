@@ -61,6 +61,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                 properties: {},
                 referenceTable: "",
                 referenceFields: [],
+                referenceCache: {},
         },
 	actionHandlers: {
 		[actionTypes.COMPONENT_CONNECTED]: async ({
@@ -176,17 +177,29 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                                    (typeof value === 'object' && value !== null) ? [value] : [];
 
                                 const parsedFields = processTableFields(fieldsArray);
-                                updateState({ referenceFields: parsedFields });
+
+                                const newCache = { ...state.referenceCache };
+                                if (state.referenceTable) {
+                                        newCache[state.referenceTable] = parsedFields;
+                                }
+
+                                updateState({ referenceFields: parsedFields, referenceCache: newCache });
 
                                 if (state.designer) {
                                         addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
-        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
-            state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
-        }
+                                        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
+                                                state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
+                                        }
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }
                         } else if (name === "referenceTable") {
+                                if (state.referenceCache[value] && state.designer) {
+                                        addFieldPickersToDesigner(state.designer, state.referenceCache[value], dispatch);
+                                        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
+                                                state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
+                                        }
+                                }
                                 updateState({ referenceTable: value });
                         } else if (
                                 name === "predefinedCard" &&
