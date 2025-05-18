@@ -23,9 +23,10 @@ walked table's fields. Both the property and the `reference-table-requested`
 event are declared in `now-ui.json` so they appear in the UI Builder
 configuration panel.
 
-**Register the event in the instance**
+### Registering the event in the instance
 
-For UI Builder to recognize the event, create a matching record in `sys_ux_event`
-and add it to the component's dispatched events in the `sys_ux_macroponent`
-table. Older versions of `now-cli` do not populate this list automatically, so
-verify the association after deploying.
+UI Builder only exposes events that are registered on the instance. After
+deploying the component, create a `sys_ux_event` record with the name
+`reference-table-requested` and add it to the dispatched events list on the
+component's macroponent record. Once registered you can map the event to any
+handler action on your page.
