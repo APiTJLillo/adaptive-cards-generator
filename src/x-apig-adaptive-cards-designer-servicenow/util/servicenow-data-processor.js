@@ -26,7 +26,8 @@ export const processTableFields = (fieldsData) => {
             label: field.column_label?.displayValue || field.sys_name?.displayValue,
             type: internalType,
             isReference: isRef,
-            referenceTable: field.reference?.displayValue,
+            referenceTable: field.reference?.value,
+            referenceLabel: field.reference?.displayValue,
             displayValue: field.sys_name?.displayValue,
         };
     });

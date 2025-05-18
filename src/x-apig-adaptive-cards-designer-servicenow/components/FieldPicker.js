@@ -94,7 +94,7 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     arrow.type = "button";
                     arrow.className = "acd-field-reference-arrow";
                     arrow.textContent = "→";
-                    arrow.title = `Show fields from ${field.referenceTable}`;
+                    arrow.title = `Show fields from ${field.referenceLabel || field.referenceTable}`;
                     arrow.onclick = (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();

@@ -60,13 +60,13 @@
         {
           "name": "reference-table-requested",
           "label": "Reference Table Requested",
-          "description": "Request to load fields for a referenced table",
+          "description": "Dispatched when the user requests fields for a referenced table",
           "action": "reference-table-requested",
           "payload": [
             {
               "name": "tableName",
               "label": "Table Name",
-              "description": "Name of the referenced table to fetch fields from",
+              "description": "Name of the referenced table",
               "type": "string"
             }
           ]
@@ -74,7 +74,7 @@
       ],
       "events": [
         {
-          "name": "REFERENCE_TABLE_REQUESTED",
+          "name": "reference-table-requested",
           "label": "Reference Table Requested",
           "description": "Emitted when a reference field arrow is clicked",
           "action": "reference-table-requested",
@@ -83,98 +83,6 @@
               "name": "tableName",
               "label": "Table Name",
               "description": "The referenced table to fetch fields for",
-              "type": "string"
-            }
-          ]
-        }
-      ],
-      "actions": [
-        {
-          "name": "reference-table-requested",
-          "label": "Reference Table Requested",
-          "description": "Dispatched when the user clicks a reference field's arrow to dot walk",
-          "action": "reference-table-requested",
-          "payload": [
-            {
-              "name": "tableName",
-              "label": "Table Name",
-              "description": "Name of the referenced table",
-              "type": "string"
-            }
-          ]
-        }
-      ],
-      "actions": [
-        {
-          "name": "reference-table-requested",
-          "label": "Reference Table Requested",
-          "description": "Fired when the arrow next to a reference field is clicked",
-          "action": "reference-table-requested",
-          "payload": [
-            {
-              "name": "tableName",
-              "label": "Table Name",
-              "description": "Name of the referenced table",
-              "type": "string"
-            }
-          ]
-        }
-      ],
-      "actions": [
-        {
-          "name": "reference-table-requested",
-          "label": "Reference Table Requested",
-          "description": "Emitted when a reference field arrow is clicked",
-          "action": "reference-table-requested",
-          "payload": [
-            {
-              "name": "tableName",
-              "label": "Table Name",
-              "type": "string"
-            }
-          ]
-        }
-      ],
-      "actions": [
-        {
-          "name": "reference-table-requested",
-          "label": "Reference Table Requested",
-          "description": "Fired when navigating to a referenced table",
-          "action": "reference-table-requested",
-          "payload": [
-            {
-              "name": "tableName",
-              "label": "Table Name",
-              "type": "string"
-            }
-          ]
-        }
-      ],
-      "actions": [
-        {
-          "name": "reference-table-requested",
-          "label": "Reference Table Requested",
-          "description": "Dispatched when a reference field arrow is clicked",
-          "action": "reference-table-requested",
-          "payload": [
-            {
-              "name": "tableName",
-              "label": "Table Name",
-              "type": "string"
-            }
-          ]
-        }
-      ],
-      "actions": [
-        {
-          "name": "reference-table-requested",
-          "description": "Dispatched when requesting fields from a referenced table",
-          "action": "reference-table-requested",
-          "payload": [
-            {
-              "name": "tableName",
-              "label": "Table Name",
-              "description": "Name of the referenced table",
               "type": "string"
             }
           ]
