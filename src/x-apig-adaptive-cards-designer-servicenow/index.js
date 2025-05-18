@@ -10,7 +10,7 @@ import { processTableFields, processCardData } from './util/servicenow-data-proc
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
         renderer: { type: snabbdom },
         view,
-        outputs: {
+        dispatches: {
                 "reference-table-requested": {
                         schema: {
                                 type: "object",
