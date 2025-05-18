@@ -99,21 +99,40 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         ev.preventDefault();
                         ev.stopPropagation();
 
+                        console.log(
+                            "Dot-walk arrow clicked",
+                            {
+                                fieldName: field.name,
+                                table: field.referenceTable,
+                                hasDispatch: typeof dispatch === "function",
+                            }
+                        );
+
                         const event = new CustomEvent("reference-table-requested", {
                             bubbles: true,
                             composed: true,
                             detail: {
                                 type: "reference-table-requested",
-                                payload: { tableName: field.referenceTable }
-                            }
+                                payload: { tableName: field.referenceTable },
+                            },
                         });
+
+                        console.log(
+                            "Dispatching CustomEvent reference-table-requested",
+                            event.detail
+                        );
+
                         designer.hostElement.dispatchEvent(event);
 
                         if (typeof dispatch === "function") {
                             // UI Core dispatch expects the action name as the
                             // first argument followed by the payload
-                            dispatch(
-                                "reference-table-requested",
+                            dispatch("reference-table-requested", {
+                                tableName: field.referenceTable,
+                            });
+
+                            console.log(
+                                "UI Core dispatch called for reference-table-requested",
                                 { tableName: field.referenceTable }
                             );
                         }
