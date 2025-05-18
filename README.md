@@ -22,3 +22,11 @@ component via the `referenceFields` property to update the modal with the dot
 walked table's fields. Both the property and the `reference-table-requested`
 event are declared in `now-ui.json` so they appear in the UI Builder
 configuration panel.
+
+### Registering the event in the instance
+
+UI Builder only exposes events that are registered on the instance. After
+deploying the component, create a `sys_ux_event` record with the name
+`reference-table-requested` and add it to the dispatched events list on the
+component's macroponent record. Once registered you can map the event to any
+handler action on your page.
