@@ -99,14 +99,21 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         ev.preventDefault();
                         ev.stopPropagation();
 
-                        const event = new CustomEvent("reference-table-requested", {
-                            bubbles: true,
-                            composed: true,
-                            detail: {
-                                type: "reference-table-requested",
-                                payload: { tableName: field.referenceTable }
+                        console.log(
+                            "Dot-walk requested for", field.referenceTable
+                        );
+
+                        const event = new CustomEvent(
+                            "reference-table-requested",
+                            {
+                                bubbles: true,
+                                composed: true,
+                                detail: {
+                                    type: "reference-table-requested",
+                                    payload: { tableName: field.referenceTable }
+                                }
                             }
-                        });
+                        );
                         designer.hostElement.dispatchEvent(event);
 
                         if (typeof dispatch === "function") {
