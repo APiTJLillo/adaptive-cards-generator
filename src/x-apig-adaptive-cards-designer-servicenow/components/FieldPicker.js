@@ -98,21 +98,24 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     arrow.onclick = (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
-                        const eventDetail = {
-                            type: "reference-table-requested",
-                            payload: { tableName: field.referenceTable }
-                        };
+
                         const event = new CustomEvent("reference-table-requested", {
                             bubbles: true,
                             composed: true,
-                            detail: eventDetail
-                        });
-                        designer.hostElement.dispatchEvent(event);
-                        if (typeof dispatch === "function") {
-                            dispatch({
+                            detail: {
                                 type: "reference-table-requested",
                                 payload: { tableName: field.referenceTable }
-                            });
+                            }
+                        });
+                        designer.hostElement.dispatchEvent(event);
+
+                        if (typeof dispatch === "function") {
+                            // UI Core dispatch expects the action name as the
+                            // first argument followed by the payload
+                            dispatch(
+                                "reference-table-requested",
+                                { tableName: field.referenceTable }
+                            );
                         }
                     };
                     item.appendChild(arrow);
