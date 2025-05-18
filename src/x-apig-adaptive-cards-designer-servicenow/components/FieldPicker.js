@@ -40,6 +40,16 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
     const showFieldPicker = (input) => {
         designer._showFieldPicker = showFieldPicker;
         designer._lastFieldPickerInput = input;
+
+        if (designer._fieldPickerOverlay) {
+            designer._fieldPickerOverlay.remove();
+            designer._fieldPickerOverlay = null;
+        }
+        if (designer._fieldPickerModal) {
+            designer._fieldPickerModal.remove();
+            designer._fieldPickerModal = null;
+        }
+
         console.log("Showing field picker for input:", input);
 
         const fieldsForModal = designer._availableFieldPickerFields || [];
@@ -100,28 +110,20 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         ev.stopPropagation();
 
                         console.log(
-                            "Dot-walk arrow clicked",
+                            "Dot-walk requested for", field.referenceTable
+                        );
+
+                        const event = new CustomEvent(
+                            "reference-table-requested",
                             {
-                                fieldName: field.name,
-                                table: field.referenceTable,
-                                hasDispatch: typeof dispatch === "function",
+                                bubbles: true,
+                                composed: true,
+                                detail: {
+                                    type: "reference-table-requested",
+                                    payload: { tableName: field.referenceTable }
+                                }
                             }
                         );
-
-                        const event = new CustomEvent("reference-table-requested", {
-                            bubbles: true,
-                            composed: true,
-                            detail: {
-                                type: "reference-table-requested",
-                                payload: { tableName: field.referenceTable },
-                            },
-                        });
-
-                        console.log(
-                            "Dispatching CustomEvent reference-table-requested",
-                            event.detail
-                        );
-
                         designer.hostElement.dispatchEvent(event);
 
                         if (typeof dispatch === "function") {

@@ -10,7 +10,7 @@ import { processTableFields, processCardData } from './util/servicenow-data-proc
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
         renderer: { type: snabbdom },
         view,
-        outputs: {
+        dispatches: {
                 "reference-table-requested": {
                         schema: {
                                 type: "object",
@@ -61,6 +61,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                 properties: {},
                 referenceTable: "",
                 referenceFields: [],
+                referenceCache: {},
         },
 	actionHandlers: {
 		[actionTypes.COMPONENT_CONNECTED]: async ({
@@ -191,32 +192,30 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                                    (typeof value === 'object' && value !== null) ? [value] : [];
 
                                 const parsedFields = processTableFields(fieldsArray);
-                                console.log(
-                                    "COMPONENT_PROPERTY_CHANGED: Parsed referenceFields count:",
-                                    parsedFields.length
-                                );
-                                if (parsedFields.length > 0) {
-                                    console.log(
-                                        "COMPONENT_PROPERTY_CHANGED: First reference field:",
-                                        JSON.stringify(parsedFields[0], null, 2)
-                                    );
+
+                                const newCache = { ...state.referenceCache };
+                                if (state.referenceTable) {
+                                        newCache[state.referenceTable] = parsedFields;
                                 }
 
-                                updateState({ referenceFields: parsedFields });
+                                updateState({ referenceFields: parsedFields, referenceCache: newCache });
 
                                 if (state.designer) {
                                         addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
-        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
-            state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
-        }
+                                        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
+                                                state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
+                                        }
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }
-                                } else if (name === "referenceTable") {
-                                console.log(
-                                    "COMPONENT_PROPERTY_CHANGED: referenceTable updated to",
-                                    value
-                                );
+
+                        } else if (name === "referenceTable") {
+                                if (state.referenceCache[value] && state.designer) {
+                                        addFieldPickersToDesigner(state.designer, state.referenceCache[value], dispatch);
+                                        if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
+                                                state.designer._showFieldPicker(state.designer._lastFieldPickerInput);
+                                        }
+                                }
                                 updateState({ referenceTable: value });
                         } else if (
                                 name === "predefinedCard" &&
