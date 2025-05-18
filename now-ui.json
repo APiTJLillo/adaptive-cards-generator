@@ -35,6 +35,57 @@
             "resource": "sys_dictionary",
             "transform": "table_fields"
           }
+        },
+        {
+          "name": "referenceFields",
+          "label": "Reference Fields",
+          "description": "Fields from a referenced table when dot walking.",
+          "readOnly": false,
+          "required": false,
+          "defaultValue": [],
+          "type": "array",
+          "itemType": "object"
+        },
+        {
+          "name": "referenceTable",
+          "label": "Reference Table",
+          "description": "The table from which reference fields are loaded.",
+          "readOnly": false,
+          "required": false,
+          "type": "string",
+          "defaultValue": ""
+        }
+      ],
+      "actions": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Dispatched when the user requests fields for a referenced table",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "Name of the referenced table",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Emitted when a reference field arrow is clicked",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "The referenced table to fetch fields for",
+              "type": "string"
+            }
+          ]
         }
       ],
       "uiBuilder": {

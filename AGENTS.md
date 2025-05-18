@@ -1,7 +1,6 @@
 # Agent Instructions
 
-This repository contains a ServiceNow UI Builder component for designing Adaptive Cards. The project relies on the ServiceNow `snc` CLI for development and deployment. Standard Node commands like `npm start` or `npm run build` won't work; use the `snc` CLI instead.
-
+This repository contains a ServiceNow UI Builder component for designing Adaptive Cards.
 The project requires Node.js version 14 or newer.
 
 ## Coding Guidelines

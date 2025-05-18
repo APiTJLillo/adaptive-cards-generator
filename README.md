@@ -1,13 +1,34 @@
-# adaptive-cards-designer-servicenow
-
+adaptive-cards-designer-servicenow
+===================================
 Design adaptive cards with a UI Builder component.
 
-This project is meant to be run with the ServiceNow `snc` CLI rather than standard Node commands. The CLI handles building and serving the component inside a ServiceNow instance. Typical Node commands like `npm start` will not work. Ensure the `snc` CLI is installed and configured for your instance.
+### Reference field navigation
 
-## Getting Started
 
-1. Install the ServiceNow CLI (`snc`).
-2. Run `snc ui-dev` to start a local development server.
-3. Use `snc ui-component` commands to manage components.
+Reference type fields displayed in the picker now include an arrow button. When
+clicked the component dispatches a `reference-table-requested` event bubbling
+from the component's root. The event detail follows the `type`/`payload`
+format expected by UI Builder and includes the referenced table name:
 
-Node.js 14 or newer is still required for the CLI and development tooling.
+```javascript
+detail: {
+  type: 'reference-table-requested',
+  payload: { tableName: 'sys_user' }
+}
+```
+
+Listen for this event in UI Builder and provide the resulting fields back to the
+component via the `referenceFields` property. When both the `referenceTable`
+and `referenceFields` properties are populated, the component caches the table's
+fields locally and refreshes the modal with the new options. Subsequent requests
+for the same table reuse the cached values. Both the properties and the
+`reference-table-requested` event are declared in `now-ui.json` so they appear in
+the UI Builder configuration panel.
+
+### Registering the event in the instance
+
+UI Builder only exposes events that are registered on the instance. After
+deploying the component, create a `sys_ux_event` record with the name
+`reference-table-requested` and add it to the dispatched events list on the
+component's macroponent record. Once registered you can map the event to any
+handler action on your page.

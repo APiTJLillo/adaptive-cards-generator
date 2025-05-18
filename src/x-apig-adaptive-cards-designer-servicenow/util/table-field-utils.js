@@ -12,9 +12,7 @@ export const formatFieldReference = (field) => {
         return '';
     }
     
-    return field.isReference
-        ? `\${current.${field.name}.display_value}`
-        : `\${current.${field.name}}`;
+    return `\${${field.name}}`;
 };
 
 /**
