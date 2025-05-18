@@ -21,6 +21,16 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 },
                                 additionalProperties: false
                         }
+                },
+                // Event for cleanup when a field is selected
+                "FIELD_SELECTION_COMPLETE": {
+                        schema: {
+                                type: "object",
+                                properties: {
+                                        cleanupRequired: { type: "boolean" }
+                                },
+                                additionalProperties: false
+                        }
                 }
         },
         properties: {
@@ -76,6 +86,33 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 			state,
 		}) => {
 			try {
+				// Add listener for field selection complete event
+				host.addEventListener('sn:FIELD_SELECTION_COMPLETE', (event) => {
+					console.log("Field selection complete event received, cleaning up modals");
+					
+					// Reset loading state
+					updateState({ isLoadingReferenceFields: false });
+					
+					// Clean up any remaining modals
+					if (state.designer && state.designer.hostElement) {
+						const allModals = state.designer.hostElement.querySelectorAll('.acd-field-picker-modal');
+						console.log(`Found ${allModals.length} modals to clean up from field selection`);
+						allModals.forEach(modal => modal.remove());
+						
+						// Also clean overlays
+						const allOverlays = state.designer.hostElement.querySelectorAll('.acd-field-picker-overlay');
+						allOverlays.forEach(overlay => overlay.remove());
+						
+						// Ensure the modal references are cleared
+						if (state.designer._fieldPickerModal) {
+							state.designer._fieldPickerModal = null;
+						}
+						if (state.designer._fieldPickerOverlay) {
+							state.designer._fieldPickerOverlay = null;
+						}
+					}
+				});
+				
 				// Add listener for DOM custom events that might come from parent components
 				host.addEventListener('sn:REFERENCE_TABLE_FIELDS_REQUESTED', (event) => {
 					if (event.detail && (event.detail.tableName || event.detail.table)) {
@@ -276,22 +313,30 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 });
 
                                 if (state.designer) {
-                                        // Remove any existing loading modals
-                                        if (state.designer._fieldPickerModal) {
-                                            state.designer._fieldPickerModal.remove();
-                                            state.designer._fieldPickerModal = null;
-                                        }
-                                        if (state.designer._fieldPickerOverlay) {
-                                            state.designer._fieldPickerOverlay.remove();
-                                            state.designer._fieldPickerOverlay = null;
-                                        }
+                                        // Clean up ALL field picker modals before showing new ones
+                                        // This ensures proper cleanup especially after field selection
+                                        const cleanupAllModals = () => {
+                                            if (state.designer.hostElement) {
+                                                const allModals = state.designer.hostElement.querySelectorAll('.acd-field-picker-modal');
+                                                allModals.forEach(modal => modal.remove());
+                                                
+                                                const allOverlays = state.designer.hostElement.querySelectorAll('.acd-field-picker-overlay');
+                                                allOverlays.forEach(overlay => overlay.remove());
+                                            }
+                                        };
                                         
-                                        // Add the field pickers with the new fields
+                                        // Run cleanup
+                                        cleanupAllModals();
+                                        
+                                        // Then add the field pickers with the new fields
                                         addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
                                         
                                         // Wait a moment before reopening the field picker to avoid any race conditions
                                         setTimeout(() => {
                                             if (state.designer._showFieldPicker && state.designer._lastFieldPickerInput) {
+                                                // Run cleanup again in case any new modals appeared
+                                                cleanupAllModals();
+                                                
                                                 console.log("Reopening field picker with new reference fields");
                                                 
                                                 // Get the dot-walk path that was stored when the reference field was clicked
@@ -567,5 +612,23 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				host.shadowRoot.innerHTML = "";
 			}
 		},
+                // Handler for cleanup after field selection
+                "FIELD_SELECTION_COMPLETE": ({ state, updateState }) => {
+                        console.log("FIELD_SELECTION_COMPLETE action handler triggered");
+                        
+                        // Reset the loading state
+                        updateState({ isLoadingReferenceFields: false });
+                        
+                        // Clean up any modals that might be lingering
+                        if (state.designer && state.designer.hostElement) {
+                                const allModals = state.designer.hostElement.querySelectorAll('.acd-field-picker-modal');
+                                console.log(`UI Core handler found ${allModals.length} modals to clean up`);
+                                allModals.forEach(modal => modal.remove());
+                                
+                                // Also clean up overlays
+                                const allOverlays = state.designer.hostElement.querySelectorAll('.acd-field-picker-overlay');
+                                allOverlays.forEach(overlay => overlay.remove());
+                        }
+                },
 	},
 });

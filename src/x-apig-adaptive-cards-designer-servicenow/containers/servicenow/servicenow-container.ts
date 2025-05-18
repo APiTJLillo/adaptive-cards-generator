@@ -57,9 +57,7 @@ export class ServiceNowContainer extends HostContainer {
             item.className = 'acd-field-item';
             item.textContent = `${field.label} (${field.name})`;
             item.onclick = () => {
-                const reference = field.isReference ? 
-                    `\${current.${field.name}.display_value}` : 
-                    `\${current.${field.name}}`;
+                const reference = `\${${field.name}}`;
                 
                 if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
                     const start = input.selectionStart ?? 0;

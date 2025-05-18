@@ -109,15 +109,34 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
         
         console.log("Showing field picker with path:", designer._currentDotWalkPath);
 
-        if (designer._fieldPickerOverlay) {
-            designer._fieldPickerOverlay.remove();
-            designer._fieldPickerOverlay = null;
-        }
-        if (designer._fieldPickerModal) {
-            designer._fieldPickerModal.remove();
-            designer._fieldPickerModal = null;
-        }
-
+        // Clean up any existing field picker UI
+        const cleanupExistingModals = () => {
+            // Remove our own modals first
+            if (designer._fieldPickerOverlay) {
+                designer._fieldPickerOverlay.remove();
+                designer._fieldPickerOverlay = null;
+            }
+            if (designer._fieldPickerModal) {
+                designer._fieldPickerModal.remove();
+                designer._fieldPickerModal = null;
+            }
+            
+            // Then search for and remove any other field picker modals that might be orphaned
+            if (designer.hostElement) {
+                // Find and remove all modals
+                const allModals = designer.hostElement.querySelectorAll('.acd-field-picker-modal');
+                console.log(`Found ${allModals.length} existing modals to clean up before showing picker`);
+                allModals.forEach(modal => modal.remove());
+                
+                // Find and remove all overlays
+                const allOverlays = designer.hostElement.querySelectorAll('.acd-field-picker-overlay');
+                allOverlays.forEach(overlay => overlay.remove());
+            }
+        };
+        
+        // Perform cleanup
+        cleanupExistingModals();
+        
         console.log("Showing field picker for input:", input);
         
         // Ensure we have fields - try multiple sources with fallbacks
@@ -503,11 +522,8 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     const fieldPath = designer._currentDotWalkPath ? 
                         `${designer._currentDotWalkPath}.${field.name}` : 
                         field.name;
-                        
-                    // Create the reference string with proper display_value for reference fields
-                    const reference = field.isReference
-                        ? `\${current.${fieldPath}.display_value}`
-                        : `\${current.${fieldPath}}`;
+                    
+                    const reference = `\${${fieldPath}}`;
                         
                     // Show a brief selection notification
                     const notification = document.createElement('div');
@@ -537,7 +553,8 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         isRef: field.isReference,
                         dotWalkPath: designer._currentDotWalkPath 
                     });
-
+                    
+                    // Insert the field value into the input
                     if (input instanceof HTMLSelectElement) {
                         // Add option if it doesn't exist
                         if (![...input.options].some(o => o.value === reference)) {
@@ -552,11 +569,51 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         input.dispatchEvent(new Event("input", { bubbles: true }));
                         input.dispatchEvent(new Event("change", { bubbles: true }));
                     }
-
+                    
+                    // Remove this field picker's modal and overlay
                     overlay.remove();
                     modal.remove();
                     designer._fieldPickerOverlay = null;
                     designer._fieldPickerModal = null;
+                    
+                    // CRITICAL: Also remove any other modals that might be open
+                    // especially the loading modal when selecting fields after dot-walking
+                    const cleanupAllModals = () => {
+                        // Find and remove ALL field picker modals in the DOM
+                        const allModals = designer.hostElement.querySelectorAll('.acd-field-picker-modal');
+                        console.log(`Cleaning up ${allModals.length} modals`);
+                        
+                        allModals.forEach(modalElement => {
+                            console.log('Removing additional modal:', modalElement);
+                            modalElement.remove();
+                        });
+                        
+                        // Find and remove ALL overlays
+                        const allOverlays = designer.hostElement.querySelectorAll('.acd-field-picker-overlay');
+                        allOverlays.forEach(overlayElement => overlayElement.remove());
+                        
+                        // Reset the loading state in the component
+                        if (typeof dispatchFunction === "function") {
+                            // Use a custom event to signal field selection is complete and modals should be cleared
+                            dispatchFunction('FIELD_SELECTION_COMPLETE', {
+                                cleanupRequired: true
+                            });
+                        }
+                        
+                        // Also dispatch a DOM event for extra reliability
+                        const rootNode = designer.hostElement.getRootNode();
+                        const host = rootNode.host || designer.hostElement;
+                        const cleanupEvent = new CustomEvent("sn:FIELD_SELECTION_COMPLETE", {
+                            bubbles: true,
+                            composed: true,
+                            detail: { cleanupRequired: true }
+                        });
+                        host.dispatchEvent(cleanupEvent);
+                    };
+                    
+                    // Run cleanup immediately and also after a short delay to catch any race conditions
+                    cleanupAllModals();
+                    setTimeout(cleanupAllModals, 100);
                 };
                 modal.appendChild(item);
             });
