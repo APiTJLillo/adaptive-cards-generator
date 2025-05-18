@@ -32,3 +32,20 @@ deploying the component, create a `sys_ux_event` record with the name
 `reference-table-requested` and add it to the dispatched events list on the
 component's macroponent record. Once registered you can map the event to any
 handler action on your page.
+
+### Saving and loading cards
+
+The designer emits a `CARD_STATE_CHANGED` event whenever the card JSON is
+modified. Listen for this event and persist the `card` payload using the
+ServiceNow table API or your own storage mechanism.
+
+To load a previously saved card into the designer, dispatch the `LOAD_CARD`
+action with the card JSON:
+
+```javascript
+component.dispatch('LOAD_CARD', { card: savedCard });
+```
+
+Utility helpers `saveCard` and `loadCard` are available in
+`src/x-apig-adaptive-cards-designer-servicenow/util/cardStorage.js` and show how
+to interact with the table API.
