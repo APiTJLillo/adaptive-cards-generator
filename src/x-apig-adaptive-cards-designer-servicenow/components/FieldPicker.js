@@ -40,6 +40,16 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
     const showFieldPicker = (input) => {
         designer._showFieldPicker = showFieldPicker;
         designer._lastFieldPickerInput = input;
+
+        if (designer._fieldPickerOverlay) {
+            designer._fieldPickerOverlay.remove();
+            designer._fieldPickerOverlay = null;
+        }
+        if (designer._fieldPickerModal) {
+            designer._fieldPickerModal.remove();
+            designer._fieldPickerModal = null;
+        }
+
         console.log("Showing field picker for input:", input);
 
         const fieldsForModal = designer._availableFieldPickerFields || [];
@@ -94,26 +104,37 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                     arrow.type = "button";
                     arrow.className = "acd-field-reference-arrow";
                     arrow.textContent = "→";
-                    arrow.title = `Show fields from ${field.referenceTable}`;
+                    arrow.title = `Show fields from ${field.referenceLabel || field.referenceTable}`;
                     arrow.onclick = (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
 
-                        const event = new CustomEvent("reference-table-requested", {
-                            bubbles: true,
-                            composed: true,
-                            detail: {
-                                type: "reference-table-requested",
-                                payload: { tableName: field.referenceTable }
+                        console.log(
+                            "Dot-walk requested for", field.referenceTable
+                        );
+
+                        const event = new CustomEvent(
+                            "reference-table-requested",
+                            {
+                                bubbles: true,
+                                composed: true,
+                                detail: {
+                                    type: "reference-table-requested",
+                                    payload: { tableName: field.referenceTable }
+                                }
                             }
-                        });
+                        );
                         designer.hostElement.dispatchEvent(event);
 
                         if (typeof dispatch === "function") {
                             // UI Core dispatch expects the action name as the
                             // first argument followed by the payload
-                            dispatch(
-                                "reference-table-requested",
+                            dispatch("reference-table-requested", {
+                                tableName: field.referenceTable,
+                            });
+
+                            console.log(
+                                "UI Core dispatch called for reference-table-requested",
                                 { tableName: field.referenceTable }
                             );
                         }

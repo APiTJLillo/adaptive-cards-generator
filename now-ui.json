@@ -72,6 +72,22 @@
           ]
         }
       ],
+      "events": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Emitted when a reference field arrow is clicked",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "tableName",
+              "label": "Table Name",
+              "description": "The referenced table to fetch fields for",
+              "type": "string"
+            }
+          ]
+        }
+      ],
       "uiBuilder": {
         "associatedTypes": [
           "global.core",

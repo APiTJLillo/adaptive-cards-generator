@@ -18,16 +18,17 @@ detail: {
 ```
 
 Listen for this event in UI Builder and provide the resulting fields back to the
-component via the `referenceFields` property to update the modal with the dot
-walked table's fields. Both the property and the `reference-table-requested`
-event are declared in `now-ui.json` so they appear in the UI Builder
-configuration panel.
-#### Registering the event
+component via the `referenceFields` property. When both the `referenceTable`
+and `referenceFields` properties are populated, the component caches the table's
+fields locally and refreshes the modal with the new options. Subsequent requests
+for the same table reuse the cached values. Both the properties and the
+`reference-table-requested` event are declared in `now-ui.json` so they appear in
+the UI Builder configuration panel.
 
-After deploying the component you must register the event in your instance so UI Builder can react to it:
+### Registering the event in the instance
 
-1. Create a row in **sys_ux_event** named `reference-table-requested`.
-2. Open the component's **sys_ux_macroponent** record and add that event in the *Dispatched Events* related list (the CLI may not populate this automatically).
-3. Place the component on a page in UI Builder and wire the event to refresh your data resource that supplies `referenceFields`.
-
-Once registered, clicking the arrow next to a reference field will dispatch the event and trigger your handler.
+UI Builder only exposes events that are registered on the instance. After
+deploying the component, create a `sys_ux_event` record with the name
+`reference-table-requested` and add it to the dispatched events list on the
+component's macroponent record. Once registered you can map the event to any
+handler action on your page.
