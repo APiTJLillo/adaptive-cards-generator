@@ -123,6 +123,17 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                                                [properties.referenceFields] : [];
 
                                         const parsedFields = processTableFields(fieldsArray);
+                                        console.log(
+                                            "COMPONENT_CONNECTED: Parsed referenceFields count:",
+                                            parsedFields.length
+                                        );
+                                        if (parsedFields.length > 0) {
+                                            console.log(
+                                                "COMPONENT_CONNECTED: First reference field:",
+                                                JSON.stringify(parsedFields[0], null, 2)
+                                            );
+                                        }
+
                                         updateState({ referenceFields: parsedFields });
 
                                         if (designer) {
@@ -131,6 +142,10 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 }
 
                                 if (properties.referenceTable) {
+                                        console.log(
+                                            "COMPONENT_CONNECTED: referenceTable provided",
+                                            properties.referenceTable
+                                        );
                                         updateState({ referenceTable: properties.referenceTable });
                                 }
 			} catch (error) {
@@ -193,6 +208,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 } else {
                                         console.warn("Designer not initialized yet, field pickers will be added when it's ready");
                                 }
+
                         } else if (name === "referenceTable") {
                                 if (state.referenceCache[value] && state.designer) {
                                         addFieldPickersToDesigner(state.designer, state.referenceCache[value], dispatch);

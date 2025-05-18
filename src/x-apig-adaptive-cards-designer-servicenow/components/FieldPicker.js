@@ -129,8 +129,12 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                         if (typeof dispatch === "function") {
                             // UI Core dispatch expects the action name as the
                             // first argument followed by the payload
-                            dispatch(
-                                "reference-table-requested",
+                            dispatch("reference-table-requested", {
+                                tableName: field.referenceTable,
+                            });
+
+                            console.log(
+                                "UI Core dispatch called for reference-table-requested",
                                 { tableName: field.referenceTable }
                             );
                         }
