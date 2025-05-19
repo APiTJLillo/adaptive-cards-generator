@@ -86,6 +86,22 @@
             {
               "name": "cardString",
               "label": "Card String",
+              "description": "String form of the updated card JSON",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "name": "reference-table-requested",
+          "label": "Reference Table Requested",
+          "description": "Emitted when a reference field arrow is clicked",
+          "action": "reference-table-requested",
+          "payload": [
+            {
+              "name": "cardString",
+              "label": "Card String",
               "description": "Stringified card JSON",
               "type": "string"
             }
