@@ -86,7 +86,7 @@
             {
               "name": "cardString",
               "label": "Card String",
-              "description": "Stringified card JSON",
+              "description": "String form of the updated card JSON",
               "type": "string"
             }
           ]

@@ -187,31 +187,34 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 			try {
 				let originalSetJsonFromCard =
 					designer.updateJsonFromCard.bind(designer);
-                                designer.updateJsonFromCard = () => {
-                                        try {
-                                                const cardPayload = designer.getCard();
-                                                console.log("Card updated, new payload:", cardPayload);
+				designer.updateJsonFromCard = () => {
+					try {
+						const cardPayload = designer.getCard();
+						console.log("Card updated, new payload:", cardPayload);
+						// Update both currentCardState and designer in state atomically
+                                               updateState((state) => ({
+                                                        ...state,
+                                                        currentCardState: cardPayload,
+                                                        designer: designer,
+                                                }));
 
-                                                // Persist the latest card without triggering a re-render
-                                                if (state) {
-                                                        state.currentCardState = cardPayload;
-                                                }
+                                               const cardString = JSON.stringify(cardPayload);
 
-                                                if (typeof dispatch === "function") {
-                                                        dispatch("CARD_STATE_CHANGED", { card: cardPayload });
-                                                }
-                                                const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
-                                                        bubbles: true,
-                                                        composed: true,
-                                                        detail: { card: cardPayload }
-                                                });
-                                                host.dispatchEvent(changeEvent);
+                                               if (typeof dispatch === "function") {
+                                                       dispatch("CARD_STATE_CHANGED", { card: cardPayload, cardString });
+                                               }
+                                               const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
+                                                       bubbles: true,
+                                                       composed: true,
+                                                       detail: { card: cardPayload, cardString }
+                                               });
+                                               host.dispatchEvent(changeEvent);
 
-                                                originalSetJsonFromCard();
-                                        } catch (error) {
-                                                console.error("Error in updateJsonFromCard:", error);
-                                        }
-                                };
+                                               originalSetJsonFromCard();
+					} catch (error) {
+						console.error("Error in updateJsonFromCard:", error);
+					}
+				};
 
 				// Handle initial card if provided
 				if (properties.predefinedCard) {

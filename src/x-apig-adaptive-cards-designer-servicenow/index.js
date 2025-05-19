@@ -448,12 +448,16 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 							`Setting card (attempt ${i + 1}/${maxRetries}):`,
 							cardData
 						);
-						state.designer.setCard(cardData);
+                                                state.designer.setCard(cardData);
 
-						// Wait a bit for the UI to update
-						await new Promise((resolve) => setTimeout(resolve, 50));
+                                                // Wait a bit for the UI to update
+                                                await new Promise((resolve) => setTimeout(resolve, 50));
 
-						updateState({ currentCardState: cardData });
+                                                if (state.designer.updateJsonFromCard) {
+                                                    state.designer.updateJsonFromCard();
+                                                }
+
+                                                updateState({ currentCardState: cardData });
 
 						lastError = null;
 						break;
@@ -651,6 +655,11 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                         if (cardData && state.designer) {
                                 const processed = processCardData(cardData);
                                 state.designer.setCard(processed);
+
+                                if (state.designer.updateJsonFromCard) {
+                                    state.designer.updateJsonFromCard();
+                                }
+
                                 updateState({ currentCardState: processed });
                         }
                 },
