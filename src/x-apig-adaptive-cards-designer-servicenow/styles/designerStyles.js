@@ -143,13 +143,10 @@ export const monacoStyles = `
     }
 
     /* Hide the main toolbar and bottom panels */
-    .designer-toolbar {
+    #toolbarHost {
         display: none !important;
     }
-    .acd-toolbox {
-        display: none !important;
-    }
-    .acd-json-editor-pane {
+    #jsonEditorPanel {
         display: none !important;
     }
 `;
