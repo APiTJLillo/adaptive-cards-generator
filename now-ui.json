@@ -72,10 +72,10 @@
           ]
         },
         {
-          "name": "card-state-changed",
+          "name": "CARD_STATE_CHANGED",
           "label": "Card State Changed",
           "description": "Emitted when the card JSON is modified",
-          "action": "card-state-changed",
+          "action": "CARD_STATE_CHANGED",
           "payload": [
             {
               "name": "card",
