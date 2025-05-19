@@ -166,14 +166,14 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 		designer.attachTo(designerContainer);
 		designer.hostElement = designerContainer;
 
-		// Update initial state
-		updateState((state) => ({
-			...state,
-			designerInitialized: true,
-			designer: designer,
-			currentCardState: initialCard,
-			properties: properties,
-		}));
+                // Update initial state and store the card without rerendering
+                host.__currentCardState = initialCard;
+                updateState((state) => ({
+                        ...state,
+                        designerInitialized: true,
+                        designer: designer,
+                        properties: properties,
+                }));
 
 		// Wait for initial render
 		await new Promise((resolve) => setTimeout(resolve, 100));
@@ -191,26 +191,19 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 					try {
 						const cardPayload = designer.getCard();
 						console.log("Card updated, new payload:", cardPayload);
-						// Update both currentCardState and designer in state atomically
-                                               updateState((state) => ({
-                                                        ...state,
-                                                        currentCardState: cardPayload,
-                                                        designer: designer,
-                                                }));
+             // Persist latest card without triggering a rerender
+             host.__currentCardState = cardPayload;
+             if (typeof dispatch === "function") {
+                     dispatch("CARD_STATE_CHANGED", { card: cardPayload, cardString });
+             }
+             const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
+                     bubbles: true,
+                     composed: true,
+                     detail: { card: cardPayload, cardString }
+             });
+             host.dispatchEvent(changeEvent);
 
-                                               const cardString = JSON.stringify(cardPayload);
-
-                                               if (typeof dispatch === "function") {
-                                                       dispatch("CARD_STATE_CHANGED", { card: cardPayload, cardString });
-                                               }
-                                               const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
-                                                       bubbles: true,
-                                                       composed: true,
-                                                       detail: { card: cardPayload, cardString }
-                                               });
-                                               host.dispatchEvent(changeEvent);
-
-                                               originalSetJsonFromCard();
+             originalSetJsonFromCard();
 					} catch (error) {
 						console.error("Error in updateJsonFromCard:", error);
 					}
@@ -244,10 +237,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 							designer.setCard(initialCard);
 							await new Promise((resolve) => setTimeout(resolve, 50));
 
-                                                        designer.updateJsonFromCard();
-                                                        if (state) {
-                                                                state.currentCardState = initialCard;
-                                                        }
+              designer.updateJsonFromCard();
+              host.__currentCardState = initialCard;
 
 							console.log("Initial card set successfully");
 							lastError = null;
@@ -273,13 +264,13 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 
 		await setupCardHandling();
 
-		updateState({
-			status: "Designer initialized successfully",
-			designerInitialized: true,
-			designer: designer,
-			currentCardState: designer.getCard(),
-			properties: properties,
-		});
+                host.__currentCardState = designer.getCard();
+                updateState({
+                        status: "Designer initialized successfully",
+                        designerInitialized: true,
+                        designer: designer,
+                        properties: properties,
+                });
 
 		return designer;
 	} catch (error) {
