@@ -4,7 +4,7 @@ import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js'
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
 
-export const initializeDesigner = async (properties, updateState, host, dispatch) => {
+export const initializeDesigner = async (properties, updateState, host, dispatch, state) => {
 	try {
 		const shadowRoot = host.shadowRoot;
 		shadowRoot.innerHTML = ""; // Clear any existing content
@@ -244,8 +244,10 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 							designer.setCard(initialCard);
 							await new Promise((resolve) => setTimeout(resolve, 50));
 
-							designer.updateJsonFromCard();
-							updateState({ currentCardState: initialCard });
+                                                        designer.updateJsonFromCard();
+                                                        if (state) {
+                                                                state.currentCardState = initialCard;
+                                                        }
 
 							console.log("Initial card set successfully");
 							lastError = null;
