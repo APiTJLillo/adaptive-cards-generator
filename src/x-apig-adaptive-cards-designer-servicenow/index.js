@@ -33,11 +33,11 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 additionalProperties: false
                         }
                 },
-                "card-state-changed": {
-                        schema: {
-                                type: "object",
-                                properties: {
-                                        card: { type: "object" }
+               "CARD_STATE_CHANGED": {
+                       schema: {
+                               type: "object",
+                               properties: {
+                                       card: { type: "object" }
                                 },
                                 additionalProperties: false
                         }
@@ -185,7 +185,8 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                         properties,
                                         updateState,
                                         host,
-                                        dispatch
+                                        dispatch,
+                                        state
                                 );
 				
 				console.log("COMPONENT_CONNECTED: Designer initialized:", !!designer);
