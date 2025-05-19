@@ -49,7 +49,5 @@ Utility helpers `saveCard` and `loadCard` are available in
 `src/x-apig-adaptive-cards-designer-servicenow/util/cardStorage.js` and show how
 to interact with the table API.
 
-### Linting
-
 Run `npx eslint .` to check for style issues. The project uses the flat config
 in `eslint.config.js`.
