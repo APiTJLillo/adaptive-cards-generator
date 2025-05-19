@@ -33,7 +33,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 additionalProperties: false
                         }
                 },
-                "CARD_STATE_CHANGED": {
+                "card-state-changed": {
                         schema: {
                                 type: "object",
                                 properties: {

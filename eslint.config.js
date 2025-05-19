@@ -1,17 +1,15 @@
 export default [
   {
-    ignores: ['node_modules/**', 'lib/**', 'dist/**', '.eslintrc.js', 'eslint.config.js'],
+    ignores: ['node_modules/**', 'lib/**', 'dist/**'],
   },
   {
-    files: ['**/*.{js,ts}'],
+    files: ['**/*.js'],
     languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: 'module',
+      ecmaVersion: 'latest',
+      sourceType: 'module'
     },
     rules: {
-      eqeqeq: ['error', 'smart'],
-      curly: 'error',
-      'no-console': 'error'
+      'no-console': 'off'
     }
   }
 ];

@@ -71,6 +71,27 @@
             }
           ]
         }
+        },
+        {
+          "name": "load-card",
+          "label": "Load Card",
+          "description": "Load a card into the designer",
+          "action": "load-card",
+          "payload": [
+            {
+              "name": "card",
+              "label": "Card",
+              "description": "Card JSON to load",
+              "type": "object"
+            },
+            {
+              "name": "sysId",
+              "label": "Sys ID",
+              "description": "Record sys_id to fetch card from",
+              "type": "string"
+            }
+          ]
+        }
       ],
       "events": [
         {
@@ -88,15 +109,15 @@
           ]
         },
         {
-          "name": "sn:CARD_STATE_CHANGED",
+          "name": "card-state-changed",
           "label": "Card State Changed",
-          "description": "Emitted when the card JSON is modified in the designer",
-          "action": "sn:CARD_STATE_CHANGED",
+          "description": "Emitted when the card JSON is modified",
+          "action": "card-state-changed",
           "payload": [
             {
               "name": "card",
-              "label": "Card Data",
-              "description": "The updated card payload",
+              "label": "Card",
+              "description": "Updated card JSON",
               "type": "object"
             }
           ]
