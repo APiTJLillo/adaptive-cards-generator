@@ -4,7 +4,7 @@ import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js'
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
 
-export const initializeDesigner = async (properties, updateState, host, dispatch) => {
+export const initializeDesigner = async (properties, updateState, host, dispatch, state) => {
 	try {
 		const shadowRoot = host.shadowRoot;
 		shadowRoot.innerHTML = ""; // Clear any existing content
@@ -191,19 +191,19 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 					try {
 						const cardPayload = designer.getCard();
 						console.log("Card updated, new payload:", cardPayload);
-                                               // Persist latest card without triggering a rerender
-                                               host.__currentCardState = cardPayload;
-                                               if (typeof dispatch === "function") {
-                                                       dispatch("CARD_STATE_CHANGED", { card: cardPayload });
-                                               }
-                                               const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
-                                                       bubbles: true,
-                                                       composed: true,
-                                                       detail: { card: cardPayload }
-                                               });
-                                               host.dispatchEvent(changeEvent);
+             // Persist latest card without triggering a rerender
+             host.__currentCardState = cardPayload;
+             if (typeof dispatch === "function") {
+                     dispatch("CARD_STATE_CHANGED", { card: cardPayload, cardString });
+             }
+             const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
+                     bubbles: true,
+                     composed: true,
+                     detail: { card: cardPayload, cardString }
+             });
+             host.dispatchEvent(changeEvent);
 
-                                               originalSetJsonFromCard();
+             originalSetJsonFromCard();
 					} catch (error) {
 						console.error("Error in updateJsonFromCard:", error);
 					}
@@ -237,8 +237,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 							designer.setCard(initialCard);
 							await new Promise((resolve) => setTimeout(resolve, 50));
 
-                                                        designer.updateJsonFromCard();
-                                                        host.__currentCardState = initialCard;
+              designer.updateJsonFromCard();
+              host.__currentCardState = initialCard;
 
 							console.log("Initial card set successfully");
 							lastError = null;

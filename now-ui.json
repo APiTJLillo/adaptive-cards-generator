@@ -82,6 +82,12 @@
               "label": "Card",
               "description": "Updated card JSON",
               "type": "object"
+            },
+            {
+              "name": "cardString",
+              "label": "Card String",
+              "description": "String form of the updated card JSON",
+              "type": "string"
             }
           ]
         }
