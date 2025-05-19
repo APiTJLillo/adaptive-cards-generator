@@ -191,10 +191,19 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 					try {
 						const cardPayload = designer.getCard();
 						console.log("Card updated, new payload:", cardPayload);
-             // Persist latest card without triggering a rerender
-             host.__currentCardState = cardPayload;
+						// Update both currentCardState and designer in state atomically
+             updateState((state) => ({
+                      ...state,
+                      currentCardState: cardPayload,
+                      designer: designer,
+              }));
+
+             const cardString = JSON.stringify(cardPayload);
              if (typeof dispatch === "function") {
-                     dispatch("CARD_STATE_CHANGED", { card: cardPayload, cardString });
+                     dispatch("CARD_STATE_CHANGED", {
+                             card: cardPayload,
+                             cardString
+                     });
              }
              const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
                      bubbles: true,
