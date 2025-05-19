@@ -199,12 +199,18 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
                                                 }));
 
                                                if (typeof dispatch === "function") {
-                                                       dispatch("CARD_STATE_CHANGED", { card: cardPayload });
+                                                       dispatch("CARD_STATE_CHANGED", {
+                                                               card: cardPayload,
+                                                               cardString: JSON.stringify(cardPayload)
+                                                       });
                                                }
                                                const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
                                                        bubbles: true,
                                                        composed: true,
-                                                       detail: { card: cardPayload }
+                                                       detail: {
+                                                               card: cardPayload,
+                                                               cardString: JSON.stringify(cardPayload)
+                                                       }
                                                });
                                                host.dispatchEvent(changeEvent);
 

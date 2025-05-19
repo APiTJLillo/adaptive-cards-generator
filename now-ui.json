@@ -72,16 +72,22 @@
           ]
         },
         {
-          "name": "card-state-changed",
+          "name": "CARD_STATE_CHANGED",
           "label": "Card State Changed",
           "description": "Emitted when the card JSON is modified",
-          "action": "card-state-changed",
+          "action": "CARD_STATE_CHANGED",
           "payload": [
             {
               "name": "card",
               "label": "Card",
               "description": "Updated card JSON",
               "type": "object"
+            },
+            {
+              "name": "cardString",
+              "label": "Card String",
+              "description": "Stringified card JSON",
+              "type": "string"
             }
           ]
         }
@@ -97,6 +103,26 @@
               "name": "tableName",
               "label": "Table Name",
               "description": "The referenced table to fetch fields for",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "CARD_STATE_CHANGED",
+          "label": "Card State Changed",
+          "description": "Emitted when the card JSON is modified",
+          "action": "CARD_STATE_CHANGED",
+          "payload": [
+            {
+              "name": "card",
+              "label": "Card",
+              "description": "Updated card JSON",
+              "type": "object"
+            },
+            {
+              "name": "cardString",
+              "label": "Card String",
+              "description": "Stringified card JSON",
               "type": "string"
             }
           ]
