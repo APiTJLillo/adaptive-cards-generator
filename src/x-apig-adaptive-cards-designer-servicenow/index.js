@@ -5,6 +5,7 @@ import { view } from './components/DesignerView.js';
 import { initializeDesigner } from './components/DesignerInitializer.js';
 import { addFieldPickersToDesigner } from './components/FieldPicker.js';
 import { processTableFields, processCardData } from './util/servicenow-data-processor.js';
+import { areJsonEqual } from './util/state-utils.js';
 
 // Main component definition
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
@@ -31,8 +32,18 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 },
                                 additionalProperties: false
                         }
-                }
-        },
+                },
+               "CARD_STATE_CHANGED": {
+                       schema: {
+                               type: "object",
+                               properties: {
+                                       card: { type: "object" },
+                                       cardString: { type: "string" }
+                                },
+                                additionalProperties: false
+                        }
+               }
+       },
         properties: {
 		predefinedCard: {
 			schema: { type: "object" },
@@ -161,11 +172,13 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				});
 				
 				// First initialize the designer
-				const designer = await initializeDesigner(
-					properties,
-					updateState,
-					host
-				);
+                                const designer = await initializeDesigner(
+                                        properties,
+                                        updateState,
+                                        host,
+                                        dispatch,
+                                        state
+                                );
 				
 				console.log("COMPONENT_CONNECTED: Designer initialized:", !!designer);
 
@@ -409,43 +422,49 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 state.designerInitialized &&
                                 state.designer
                         ) {
-				console.log("Updating card with new value:", value);
-				const maxRetries = 3;
-				let lastError = null;
+                            // Process the card data
+                            const cardData = processCardData(value);
+                            
+                            // Only update if the card data is different
+                            if (!areJsonEqual(cardData, state.currentCardState)) {
+                                console.log("Updating card with new value:", cardData);
+                                const maxRetries = 3;
+                                let lastError = null;
 
-				for (let i = 0; i < maxRetries; i++) {
-					try {
-						// Add a small delay between retries
-						await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
+                                for (let i = 0; i < maxRetries; i++) {
+                                    try {
+                                        // Add a small delay between retries
+                                        await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
 
-						// Process the card data using our utility function
-						const cardData = processCardData(value);
+                                        console.log(
+                                            `Setting card (attempt ${i + 1}/${maxRetries}):`,
+                                            cardData
+                                        );
+                                        
+                                        state.designer.setCard(cardData);
+                                        await new Promise((resolve) => setTimeout(resolve, 50));
+                                        
+                                        if (state.designer.updateJsonFromCard) {
+                                            state.designer.updateJsonFromCard();
+                                        }
 
-						console.log(
-							`Setting card (attempt ${i + 1}/${maxRetries}):`,
-							cardData
-						);
-						state.designer.setCard(cardData);
+                                        lastError = null;
+                                        break;
+                                    } catch (error) {
+                                        lastError = error;
+                                        console.error(
+                                            `Error setting card (attempt ${i + 1}/${maxRetries}):`,
+                                            error
+                                        );
+                                    }
+                                }
 
-						// Wait a bit for the UI to update
-						await new Promise((resolve) => setTimeout(resolve, 50));
-
-						updateState({ currentCardState: cardData });
-
-						lastError = null;
-						break;
-					} catch (error) {
-						lastError = error;
-						console.error(
-							`Error setting card (attempt ${i + 1}/${maxRetries}):`,
-							error
-						);
-					}
-				}
-
-				if (lastError) {
-					console.error("Final error setting card:", lastError);
-				}
+                                if (lastError) {
+                                    console.error("Final error setting card:", lastError);
+                                }
+                            } else {
+                                console.log("Card data unchanged, skipping update");
+                            }
 			}
 		},
                 // Legacy handler name - keeping for compatibility but redirecting to the new handler
@@ -607,7 +626,7 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                             }
                         }
                 },
-		[actionTypes.COMPONENT_DISCONNECTED]: ({ host }) => {
+                [actionTypes.COMPONENT_DISCONNECTED]: ({ host }) => {
 			if (host.shadowRoot) {
 				host.shadowRoot.innerHTML = "";
 			}
