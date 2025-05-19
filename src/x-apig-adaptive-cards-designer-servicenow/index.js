@@ -186,7 +186,8 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                         properties,
                                         updateState,
                                         host,
-                                        dispatch
+                                        dispatch,
+                                        state
                                 );
 				
 				console.log("COMPONENT_CONNECTED: Designer initialized:", !!designer);

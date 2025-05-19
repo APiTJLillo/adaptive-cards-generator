@@ -4,7 +4,7 @@ import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js'
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
 
-export const initializeDesigner = async (properties, updateState, host, dispatch) => {
+export const initializeDesigner = async (properties, updateState, host, dispatch, state) => {
 	try {
 		const shadowRoot = host.shadowRoot;
 		shadowRoot.innerHTML = ""; // Clear any existing content
@@ -187,38 +187,31 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 			try {
 				let originalSetJsonFromCard =
 					designer.updateJsonFromCard.bind(designer);
-				designer.updateJsonFromCard = () => {
-					try {
-						const cardPayload = designer.getCard();
-						console.log("Card updated, new payload:", cardPayload);
-						// Update both currentCardState and designer in state atomically
-                                               updateState((state) => ({
-                                                        ...state,
-                                                        currentCardState: cardPayload,
-                                                        designer: designer,
-                                                }));
+                                designer.updateJsonFromCard = () => {
+                                        try {
+                                                const cardPayload = designer.getCard();
+                                                console.log("Card updated, new payload:", cardPayload);
 
-                                               if (typeof dispatch === "function") {
-                                                       dispatch("CARD_STATE_CHANGED", {
-                                                               card: cardPayload,
-                                                               cardString: JSON.stringify(cardPayload)
-                                                       });
-                                               }
-                                               const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
-                                                       bubbles: true,
-                                                       composed: true,
-                                                       detail: {
-                                                               card: cardPayload,
-                                                               cardString: JSON.stringify(cardPayload)
-                                                       }
-                                               });
-                                               host.dispatchEvent(changeEvent);
+                                                // Persist the latest card without triggering a re-render
+                                                if (state) {
+                                                        state.currentCardState = cardPayload;
+                                                }
 
-                                               originalSetJsonFromCard();
-					} catch (error) {
-						console.error("Error in updateJsonFromCard:", error);
-					}
-				};
+                                                if (typeof dispatch === "function") {
+                                                        dispatch("CARD_STATE_CHANGED", { card: cardPayload });
+                                                }
+                                                const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
+                                                        bubbles: true,
+                                                        composed: true,
+                                                        detail: { card: cardPayload }
+                                                });
+                                                host.dispatchEvent(changeEvent);
+
+                                                originalSetJsonFromCard();
+                                        } catch (error) {
+                                                console.error("Error in updateJsonFromCard:", error);
+                                        }
+                                };
 
 				// Handle initial card if provided
 				if (properties.predefinedCard) {
@@ -248,8 +241,10 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 							designer.setCard(initialCard);
 							await new Promise((resolve) => setTimeout(resolve, 50));
 
-							designer.updateJsonFromCard();
-							updateState({ currentCardState: initialCard });
+                                                        designer.updateJsonFromCard();
+                                                        if (state) {
+                                                                state.currentCardState = initialCard;
+                                                        }
 
 							console.log("Initial card set successfully");
 							lastError = null;
