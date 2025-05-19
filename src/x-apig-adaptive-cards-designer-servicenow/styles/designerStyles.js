@@ -141,4 +141,15 @@ export const monacoStyles = `
     .acd-toolbox {
         overflow: hidden !important;
     }
+
+    /* Hide the main toolbar and bottom panels */
+    .designer-toolbar {
+        display: none !important;
+    }
+    .acd-toolbox {
+        display: none !important;
+    }
+    .acd-json-editor-pane {
+        display: none !important;
+    }
 `;

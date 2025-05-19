@@ -5,7 +5,6 @@ import { view } from './components/DesignerView.js';
 import { initializeDesigner } from './components/DesignerInitializer.js';
 import { addFieldPickersToDesigner } from './components/FieldPicker.js';
 import { processTableFields, processCardData } from './util/servicenow-data-processor.js';
-import { loadCard } from './util/cardStorage.js';
 import { areJsonEqual } from './util/state-utils.js';
 
 // Main component definition
@@ -43,18 +42,8 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 },
                                 additionalProperties: false
                         }
-               },
-                "LOAD_CARD": {
-                        schema: {
-                                type: "object",
-                                properties: {
-                                        card: { type: "object" },
-                                        sysId: { type: "string" }
-                                },
-                                additionalProperties: false
-                        }
-                }
-        },
+               }
+       },
         properties: {
 		predefinedCard: {
 			schema: { type: "object" },
@@ -635,35 +624,6 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                     };
                                 }
                             }
-                        }
-                },
-                "LOAD_CARD": async ({ action, state, updateState }) => {
-                        let cardData = null;
-                        if (action) {
-                                if (typeof action.card === "object") {
-                                        cardData = action.card;
-                                } else if (action.payload && typeof action.payload.card === "object") {
-                                        cardData = action.payload.card;
-                                }
-
-                                if (!cardData && action.sysId) {
-                                        try {
-                                                cardData = await loadCard(action.sysId);
-                                        } catch (error) {
-                                                console.error("Error loading card:", error);
-                                        }
-                                }
-                        }
-
-                        if (cardData && state.designer) {
-                                const processed = processCardData(cardData);
-                                state.designer.setCard(processed);
-
-                                if (state.designer.updateJsonFromCard) {
-                                    state.designer.updateJsonFromCard();
-                                }
-
-                                updateState({ currentCardState: processed });
                         }
                 },
                 [actionTypes.COMPONENT_DISCONNECTED]: ({ host }) => {

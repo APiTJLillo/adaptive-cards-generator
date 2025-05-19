@@ -47,16 +47,19 @@ detail: {
 }
 ```
 
-To load a previously saved card into the designer, dispatch the `LOAD_CARD`
-action with the card JSON:
+To load a previously saved card into the designer, assign the card JSON to the
+`predefinedCard` property:
 
 ```javascript
-component.dispatch('LOAD_CARD', { card: savedCard });
+component.predefinedCard = savedCard;
 ```
 
 Utility helpers `saveCard` and `loadCard` are available in
 `src/x-apig-adaptive-cards-designer-servicenow/util/cardStorage.js` and show how
 to interact with the table API.
+
+The component hides the designer's default toolbar and bottom toolbox (including
+the JSON editor) to provide a streamlined editing surface.
 
 Run `npx eslint .` to check for style issues. The project uses the flat config
 in `eslint.config.js`.
