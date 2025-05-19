@@ -37,11 +37,12 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                        schema: {
                                type: "object",
                                properties: {
-                                       card: { type: "object" }
+                                       card: { type: "object" },
+                                       cardString: { type: "string" }
                                 },
                                 additionalProperties: false
                         }
-                },
+               },
                 "LOAD_CARD": {
                         schema: {
                                 type: "object",
