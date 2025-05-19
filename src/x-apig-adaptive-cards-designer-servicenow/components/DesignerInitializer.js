@@ -4,7 +4,7 @@ import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js'
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
 
-export const initializeDesigner = async (properties, updateState, host) => {
+export const initializeDesigner = async (properties, updateState, host, dispatch) => {
 	try {
 		const shadowRoot = host.shadowRoot;
 		shadowRoot.innerHTML = ""; // Clear any existing content
@@ -192,12 +192,24 @@ export const initializeDesigner = async (properties, updateState, host) => {
 						const cardPayload = designer.getCard();
 						console.log("Card updated, new payload:", cardPayload);
 						// Update both currentCardState and designer in state atomically
-						updateState((state) => ({
-							...state,
-							currentCardState: cardPayload,
-							designer: designer,
-						}));
-						originalSetJsonFromCard();
+                                               updateState((state) => ({
+                                                        ...state,
+                                                        currentCardState: cardPayload,
+                                                        designer: designer,
+                                                }));
+
+                                               if (typeof dispatch === "function") {
+                                                       dispatch("CARD_STATE_CHANGED", { card: cardPayload });
+                                                       dispatch("card-state-changed", { card: cardPayload });
+                                               }
+                                               const changeEvent = new CustomEvent("sn:CARD_STATE_CHANGED", {
+                                                       bubbles: true,
+                                                       composed: true,
+                                                       detail: { card: cardPayload }
+                                               });
+                                               host.dispatchEvent(changeEvent);
+
+                                               originalSetJsonFromCard();
 					} catch (error) {
 						console.error("Error in updateJsonFromCard:", error);
 					}

@@ -5,6 +5,7 @@ import { view } from './components/DesignerView.js';
 import { initializeDesigner } from './components/DesignerInitializer.js';
 import { addFieldPickersToDesigner } from './components/FieldPicker.js';
 import { processTableFields, processCardData } from './util/servicenow-data-processor.js';
+import { loadCard } from './util/cardStorage.js';
 
 // Main component definition
 createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
@@ -28,6 +29,34 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                                 type: "object",
                                 properties: {
                                         cleanupRequired: { type: "boolean" }
+                                },
+                                additionalProperties: false
+                        }
+                },
+                "CARD_STATE_CHANGED": {
+                        schema: {
+                                type: "object",
+                                properties: {
+                                        card: { type: "object" }
+                                },
+                                additionalProperties: false
+                        }
+                },
+                "card-state-changed": {
+                        schema: {
+                                type: "object",
+                                properties: {
+                                        card: { type: "object" }
+                                },
+                                additionalProperties: false
+                        }
+                },
+                "LOAD_CARD": {
+                        schema: {
+                                type: "object",
+                                properties: {
+                                        card: { type: "object" },
+                                        sysId: { type: "string" }
                                 },
                                 additionalProperties: false
                         }
@@ -161,11 +190,12 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
 				});
 				
 				// First initialize the designer
-				const designer = await initializeDesigner(
-					properties,
-					updateState,
-					host
-				);
+                                const designer = await initializeDesigner(
+                                        properties,
+                                        updateState,
+                                        host,
+                                        dispatch
+                                );
 				
 				console.log("COMPONENT_CONNECTED: Designer initialized:", !!designer);
 
@@ -607,7 +637,31 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
                             }
                         }
                 },
-		[actionTypes.COMPONENT_DISCONNECTED]: ({ host }) => {
+                "LOAD_CARD": async ({ action, state, updateState }) => {
+                        let cardData = null;
+                        if (action) {
+                                if (typeof action.card === "object") {
+                                        cardData = action.card;
+                                } else if (action.payload && typeof action.payload.card === "object") {
+                                        cardData = action.payload.card;
+                                }
+
+                                if (!cardData && action.sysId) {
+                                        try {
+                                                cardData = await loadCard(action.sysId);
+                                        } catch (error) {
+                                                console.error("Error loading card:", error);
+                                        }
+                                }
+                        }
+
+                        if (cardData && state.designer) {
+                                const processed = processCardData(cardData);
+                                state.designer.setCard(processed);
+                                updateState({ currentCardState: processed });
+                        }
+                },
+                [actionTypes.COMPONENT_DISCONNECTED]: ({ host }) => {
 			if (host.shadowRoot) {
 				host.shadowRoot.innerHTML = "";
 			}
