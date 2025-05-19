@@ -70,25 +70,18 @@
               "type": "string"
             }
           ]
-        }
         },
         {
-          "name": "load-card",
-          "label": "Load Card",
-          "description": "Load a card into the designer",
-          "action": "load-card",
+          "name": "card-state-changed",
+          "label": "Card State Changed",
+          "description": "Emitted when the card JSON is modified",
+          "action": "card-state-changed",
           "payload": [
             {
               "name": "card",
               "label": "Card",
-              "description": "Card JSON to load",
+              "description": "Updated card JSON",
               "type": "object"
-            },
-            {
-              "name": "sysId",
-              "label": "Sys ID",
-              "description": "Record sys_id to fetch card from",
-              "type": "string"
             }
           ]
         }
@@ -109,16 +102,22 @@
           ]
         },
         {
-          "name": "card-state-changed",
-          "label": "Card State Changed",
-          "description": "Emitted when the card JSON is modified",
-          "action": "card-state-changed",
+          "name": "load-card",
+          "label": "Load Card",
+          "description": "Load a card into the designer",
+          "action": "load-card",
           "payload": [
             {
               "name": "card",
               "label": "Card",
-              "description": "Updated card JSON",
+              "description": "Card JSON to load",
               "type": "object"
+            },
+            {
+              "name": "sysId",
+              "label": "Sys ID",
+              "description": "Record sys_id to fetch card from",
+              "type": "string"
             }
           ]
         }
