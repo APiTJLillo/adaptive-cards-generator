@@ -3,6 +3,7 @@ import * as ACDesigner from "adaptivecards-designer";
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
+import { areJsonEqual, debounce } from '../util/state-utils.js';
 
 export const initializeDesigner = async (properties, updateState, host, dispatch, state) => {
 	try {
@@ -166,13 +167,47 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 		designer.attachTo(designerContainer);
 		designer.hostElement = designerContainer;
 
-                // Update initial state and store the card without rerendering
+                // Store initial card state
                 host.__currentCardState = initialCard;
+                
+                // Create debounced updateJsonFromCard function
+                const debouncedUpdateJson = debounce((cardPayload) => {
+                    if (!areJsonEqual(cardPayload, host.__currentCardState)) {
+                        host.__currentCardState = cardPayload;
+                        updateState((state) => ({
+                            ...state,
+                            currentCardState: cardPayload,
+                            designer: designer
+                        }));
+
+                        const cardString = JSON.stringify(cardPayload);
+                        if (typeof dispatch === "function") {
+                            dispatch("CARD_STATE_CHANGED", {
+                                card: cardPayload,
+                                cardString
+                            });
+                        }
+                    }
+                }, 250); // 250ms debounce
+                
+                // Override updateJsonFromCard to use debouncing and comparison
+                const originalSetJsonFromCard = designer.updateJsonFromCard.bind(designer);
+                designer.updateJsonFromCard = () => {
+                    try {
+                        const cardPayload = designer.getCard();
+                        debouncedUpdateJson(cardPayload);
+                        originalSetJsonFromCard();
+                    } catch (error) {
+                        console.error("Error in updateJsonFromCard:", error);
+                    }
+                };
+
+                // Update initial state
                 updateState((state) => ({
-                        ...state,
-                        designerInitialized: true,
-                        designer: designer,
-                        properties: properties,
+                    ...state,
+                    designerInitialized: true,
+                    designer: designer,
+                    properties: properties,
                 }));
 
 		// Wait for initial render
