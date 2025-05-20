@@ -1,5 +1,5 @@
-import * as monaco from "monaco-editor";
-import * as ACDesigner from "adaptivecards-designer";
+const monaco = window.monaco;
+const ACDesigner = window.ACDesigner;
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
