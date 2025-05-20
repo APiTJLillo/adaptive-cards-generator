@@ -1,9 +1,7 @@
 const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require('terser-webpack-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 // ServiceNow environment fix
 window = self;
@@ -84,9 +82,6 @@ module.exports = {
       }
     ]
   },
-  externals: {
-    'adaptivecards-designer': 'AdaptiveCardsDesigner'
-  },
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist'),
@@ -111,10 +106,7 @@ module.exports = {
       }
 
       middlewares.push((req, res, next) => {
-        if (req.url.includes('/monaco-editor/')) {
-          res.setHeader('Content-Type', 'application/javascript');
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        } else if (req.url.endsWith('.css')) {
+        if (req.url.endsWith('.css')) {
           res.setHeader('Content-Type', 'text/css');
         }
         next();
@@ -163,33 +155,6 @@ module.exports = {
   },
   devtool: false,
   plugins: [
-    new CopyWebpackPlugin([{
-      from: 'node_modules/monaco-editor/min/vs/base/worker',
-      to: 'monaco-editor/'
-    },
-    {
-      from: 'node_modules/monaco-editor/min/vs/language/json/json.worker.js',
-      to: 'monaco-editor/'
-    },
-    {
-      from: 'node_modules/adaptivecards-designer/dist/containers/*',
-      to: 'containers/',
-      flatten: true,
-      transform(content, path) {
-        if (path.endsWith('.css')) {
-          return Buffer.from(content.toString('utf8'), 'utf8');
-        }
-        return content;
-      }
-    },
-    {
-      from: 'node_modules/adaptivecards-designer/src/adaptivecards-designer.css',
-      to: './',
-      flatten: true,
-      transform(content) {
-        return Buffer.from(content.toString('utf8'), 'utf8');
-      }
-    }]),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.IgnorePlugin({
       resourceRegExp: /^\.\/locale$/,
@@ -200,21 +165,8 @@ module.exports = {
       include: ['src/x-apig-adaptive-cards-designer/**/*.js'],
       exclude: [/node_modules/]
     }),
-    new MonacoWebpackPlugin({
-      languages: ['json'],
-      filename: 'monaco-editor/[name].worker.js',
-      publicPath: '/monaco-editor/',
-      features: ['!inlineCompletions', '!anchorSelect', '!liftDown']
-    }),
-    new webpack.DefinePlugin({
-      'process.env.MONACO_WORKER_PATH': JSON.stringify('/monaco-editor/editor.worker.js'),
-      'process.env.MONACO_BASE_URL': JSON.stringify('/monaco-editor/'),
-      'process.env.MONACO_WORKER_BASE_URL': JSON.stringify('/monaco-editor/'),
-      'self.MonacoEnvironment': JSON.stringify({ baseUrl: '/monaco-editor/' })
-    }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production'),
-      'process.env.MONACO_EDITOR_NO_WORKER': JSON.stringify('false'),
       'process.env.WEBPACK_PUBLIC_PATH': JSON.stringify('./')
     })
   ]

@@ -16,14 +16,7 @@
   "dependencies": {
     "@servicenow/sass-kit": "latest",
     "@servicenow/ui-core": "24.1.1",
-    "@servicenow/ui-renderer-snabbdom": "24.1.1",
-    "adaptive-expressions": "^4.22.3",
-    "adaptivecards": "^2.11.3",
-    "adaptivecards-designer": "^2.4.4",
-    "adaptivecards-templating": "^2.3.1",
-    "markdown-it": "^14.1.0",
-    "monaco-editor": "0.17.1",
-    "monaco-editor-webpack-plugin": "^7.0.1"
+    "@servicenow/ui-renderer-snabbdom": "24.1.1"
   },
   "devDependencies": {
     "@babel/runtime": "7.18.9",

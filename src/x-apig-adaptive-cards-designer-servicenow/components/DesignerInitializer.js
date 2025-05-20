@@ -3,8 +3,6 @@ const monaco = globalThis.monaco;
 const ACDesigner = globalThis.ACDesigner;
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
-import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
-import { codiconStyles, codiconModifierStyles, codiconFontFace } from '../styles/codiconStyles.js';
 import fabricIcons from '../fabricmdl2icons-3.54.woff';
 
 const ensureGlobalFonts = () => {
@@ -16,7 +14,6 @@ const ensureGlobalFonts = () => {
             font-family: "FabricMDL2Icons";
             src: url("${fabricIcons}") format("woff");
         }
-        ${codiconFontFace}
         `;
                 document.head.appendChild(style);
         }
@@ -27,19 +24,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
         try {
                 ensureGlobalFonts();
                 const shadowRoot = host.shadowRoot;
-		shadowRoot.innerHTML = ""; // Clear any existing content
-		const mainStyles = document.createElement("style");
-		mainStyles.textContent = designerStyles;
-		shadowRoot.appendChild(mainStyles);
+                shadowRoot.innerHTML = ""; // Clear any existing content
 
-		// Add custom Monaco styles
-                const monacoStylesElement = document.createElement("style");
-                monacoStylesElement.textContent = monacoStyles;
-                shadowRoot.appendChild(monacoStylesElement);
-
-                const codiconStylesElement = document.createElement("style");
-                codiconStylesElement.textContent = codiconStyles + codiconModifierStyles;
-                shadowRoot.appendChild(codiconStylesElement);
 
 		createGlobalDocumentProxy(shadowRoot);
 
@@ -186,9 +172,18 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 
 		designer.card = initialCard;
 
-		// Attach designer to DOM and update state
-		designer.attachTo(designerContainer);
-		designer.hostElement = designerContainer;
+                // Attach designer to DOM and update state
+                designer.attachTo(designerContainer);
+                const cssLink = document.querySelector(
+                    "link[href$='adaptivecards-designer.css']"
+                );
+                if (cssLink) {
+                    cssLink.href = cssLink.href.replace(
+                        "adaptivecards-designer.css",
+                        "designer.css"
+                    );
+                }
+                designer.hostElement = designerContainer;
 
                 // Store initial card state
                 host.__currentCardState = initialCard;
