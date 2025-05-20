@@ -77,6 +77,11 @@ module.exports = {
         test: /\.ttf$/,
         use: ['file-loader']
       }
+      ,
+      {
+        test: /\.woff2?$/,
+        use: ['file-loader']
+      }
     ]
   },
   externals: {
