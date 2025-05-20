@@ -4,7 +4,7 @@ window.onload = function () {
     }
 
     let designer = new ACDesigner.CardDesigner(ACDesigner.defaultMicrosoftHosts);
-    designer.assetPath = "https://unpkg.com/adaptivecards-designer@latest/dist";
+    designer.assetPath = "https://adaptivecards.microsoft.com";
 
     designer.attachTo(document.getElementById("designerRootHost"));
     // initialize monaco editor and tell the Designer when it's been loaded
