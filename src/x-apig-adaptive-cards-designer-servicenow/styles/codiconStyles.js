@@ -1,12 +1,13 @@
 import codiconTtf from "./codicon.ttf";
 
-export const codiconStyles = `
+export const codiconFontFace = `
 @font-face {
     font-family: "codicon";
     font-display: block;
     src: url("${codiconTtf}") format("truetype");
-}
+}`;
 
+export const codiconStyles = `
 .codicon[class*='codicon-'] {
     font: normal normal normal 16px/1 codicon;
     display: inline-block;

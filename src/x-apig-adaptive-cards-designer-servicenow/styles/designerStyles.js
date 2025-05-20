@@ -1,10 +1,6 @@
 import fabricIcons from "../fabricmdl2icons-3.54.woff";
 
 export const designerStyles = `
-    @font-face {
-        font-family: "FabricMDL2Icons";
-        src: url("${fabricIcons}") format("woff");
-    }
     :host {
         display: block;
         width: 100%;
