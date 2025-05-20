@@ -1,3 +1,5 @@
+import fabricIcons from "../fabricmdl2icons-3.54.woff";
+
 export const designerStyles = `
     :host {
         display: block;

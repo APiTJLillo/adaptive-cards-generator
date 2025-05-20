@@ -64,9 +64,8 @@ the JSON editor) to provide a streamlined editing surface.
 ### Icon fonts
 
 The designer relies on the Fluent and Codicon icon fonts. These fonts are bundled
-with the component and injected into the document head the first time the designer
-is initialized so the toolbar and Monaco editor icons display correctly within
-the shadow DOM.
+with the component and loaded when the designer initializes so the toolbar and
+Monaco editor icons display correctly.
 
 Run `npx eslint .` to check for style issues. The project uses the flat config
 in `eslint.config.js`.
