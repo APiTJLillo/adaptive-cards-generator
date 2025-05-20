@@ -185,9 +185,18 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 
 		designer.card = initialCard;
 
-		// Attach designer to DOM and update state
-		designer.attachTo(designerContainer);
-		designer.hostElement = designerContainer;
+                // Attach designer to DOM and update state
+                designer.attachTo(designerContainer);
+                const cssLink = document.querySelector(
+                    "link[href$='adaptivecards-designer.css']"
+                );
+                if (cssLink) {
+                    cssLink.href = cssLink.href.replace(
+                        "adaptivecards-designer.css",
+                        "designer.css"
+                    );
+                }
+                designer.hostElement = designerContainer;
 
                 // Store initial card state
                 host.__currentCardState = initialCard;
