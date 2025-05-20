@@ -3,20 +3,42 @@ import * as ACDesigner from "adaptivecards-designer";
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
+import { codiconStyles, codiconModifierStyles, codiconFontFace } from '../styles/codiconStyles.js';
+import fabricIcons from '../fabricmdl2icons-3.54.woff';
+
+const ensureGlobalFonts = () => {
+        if (!document.getElementById('designer-fonts')) {
+                const style = document.createElement('style');
+                style.id = 'designer-fonts';
+                style.textContent = `
+        @font-face {
+            font-family: "FabricMDL2Icons";
+            src: url("${fabricIcons}") format("woff");
+        }
+        ${codiconFontFace}
+        `;
+                document.head.appendChild(style);
+        }
+};
 import { areJsonEqual, debounce } from '../util/state-utils.js';
 
 export const initializeDesigner = async (properties, updateState, host, dispatch, state) => {
-	try {
-		const shadowRoot = host.shadowRoot;
+        try {
+                ensureGlobalFonts();
+                const shadowRoot = host.shadowRoot;
 		shadowRoot.innerHTML = ""; // Clear any existing content
 		const mainStyles = document.createElement("style");
 		mainStyles.textContent = designerStyles;
 		shadowRoot.appendChild(mainStyles);
 
 		// Add custom Monaco styles
-		const monacoStylesElement = document.createElement("style");
-		monacoStylesElement.textContent = monacoStyles;
-		shadowRoot.appendChild(monacoStylesElement);
+                const monacoStylesElement = document.createElement("style");
+                monacoStylesElement.textContent = monacoStyles;
+                shadowRoot.appendChild(monacoStylesElement);
+
+                const codiconStylesElement = document.createElement("style");
+                codiconStylesElement.textContent = codiconStyles + codiconModifierStyles;
+                shadowRoot.appendChild(codiconStylesElement);
 
 		createGlobalDocumentProxy(shadowRoot);
 
