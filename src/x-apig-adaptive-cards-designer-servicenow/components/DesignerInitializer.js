@@ -1,9 +1,7 @@
-import * as monaco from "monaco-editor";
-import * as ACDesigner from "adaptivecards-designer";
+const monaco = window.monaco;
+const ACDesigner = window.ACDesigner || window.AdaptiveCardsDesigner;
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
-import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
-import { codiconStyles, codiconModifierStyles, codiconFontFace } from '../styles/codiconStyles.js';
 import fabricIcons from '../fabricmdl2icons-3.54.woff';
 
 const ensureGlobalFonts = () => {
@@ -15,7 +13,6 @@ const ensureGlobalFonts = () => {
             font-family: "FabricMDL2Icons";
             src: url("${fabricIcons}") format("woff");
         }
-        ${codiconFontFace}
         `;
                 document.head.appendChild(style);
         }
@@ -26,19 +23,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
         try {
                 ensureGlobalFonts();
                 const shadowRoot = host.shadowRoot;
-		shadowRoot.innerHTML = ""; // Clear any existing content
-		const mainStyles = document.createElement("style");
-		mainStyles.textContent = designerStyles;
-		shadowRoot.appendChild(mainStyles);
+                shadowRoot.innerHTML = ""; // Clear any existing content
 
-		// Add custom Monaco styles
-                const monacoStylesElement = document.createElement("style");
-                monacoStylesElement.textContent = monacoStyles;
-                shadowRoot.appendChild(monacoStylesElement);
-
-                const codiconStylesElement = document.createElement("style");
-                codiconStylesElement.textContent = codiconStyles + codiconModifierStyles;
-                shadowRoot.appendChild(codiconStylesElement);
 
 		createGlobalDocumentProxy(shadowRoot);
 
@@ -163,8 +149,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 		ACDesigner.GlobalSettings.showTargetVersionMismatchWarning = false;
 
 		// Create and initialize the designer
-		const designer = new ServiceNowCardDesigner(hostContainers);
-		designer.assetPath = "https://unpkg.com/adaptivecards-designer@2.4.4/dist";
+                const designer = new ServiceNowCardDesigner(hostContainers);
+                designer.assetPath = "https://adaptivecards.microsoft.com";
 
 		// Initialize toolbox
 		designer.initializeToolbox(toolboxContent, toolboxHeader);
