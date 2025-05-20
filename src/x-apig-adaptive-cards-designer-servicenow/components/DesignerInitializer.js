@@ -3,6 +3,7 @@ import * as ACDesigner from "adaptivecards-designer";
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
+import { codiconStyles, codiconModifierStyles } from '../styles/codiconStyles.js';
 import { areJsonEqual, debounce } from '../util/state-utils.js';
 
 export const initializeDesigner = async (properties, updateState, host, dispatch, state) => {
@@ -14,9 +15,13 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 		shadowRoot.appendChild(mainStyles);
 
 		// Add custom Monaco styles
-		const monacoStylesElement = document.createElement("style");
-		monacoStylesElement.textContent = monacoStyles;
-		shadowRoot.appendChild(monacoStylesElement);
+                const monacoStylesElement = document.createElement("style");
+                monacoStylesElement.textContent = monacoStyles;
+                shadowRoot.appendChild(monacoStylesElement);
+
+                const codiconStylesElement = document.createElement("style");
+                codiconStylesElement.textContent = codiconStyles + codiconModifierStyles;
+                shadowRoot.appendChild(codiconStylesElement);
 
 		createGlobalDocumentProxy(shadowRoot);
 

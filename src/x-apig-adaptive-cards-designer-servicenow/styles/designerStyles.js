@@ -1,7 +1,9 @@
+import fabricIcons from "../fabricmdl2icons-3.54.woff";
+
 export const designerStyles = `
     @font-face {
         font-family: "FabricMDL2Icons";
-        src: url("https://static2.sharepointonline.com/files/fabric/assets/icons/fabricmdl2icons-3.54.woff") format("woff");
+        src: url("${fabricIcons}") format("woff");
     }
     :host {
         display: block;
