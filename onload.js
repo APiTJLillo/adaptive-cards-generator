@@ -4,12 +4,11 @@ window.onload = function () {
     }
 
     let designer = new ACDesigner.CardDesigner(ACDesigner.defaultMicrosoftHosts);
-    designer.assetPath = "https://unpkg.com/adaptivecards-designer@latest/dist";
+    designer.assetPath = "https://adaptivecards.microsoft.com";
 
     designer.attachTo(document.getElementById("designerRootHost"));
-    // initialize monaco editor and tell the Designer when it's been loaded
-    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.17.1/min/vs' } });
-    require(['vs/editor/editor.main'], function () {
-        designer.monacoModuleLoaded();
-    });
+    // initialize monaco editor if available from the CDN
+    if (window.monaco) {
+        designer.monacoModuleLoaded(window.monaco);
+    }
 };

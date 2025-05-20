@@ -1,5 +1,5 @@
-import * as monaco from "monaco-editor";
-import * as ACDesigner from "adaptivecards-designer";
+const monaco = window.monaco;
+const ACDesigner = window.ACDesigner;
 import { ServiceNowCardDesigner } from '../components/ServiceNowCardDesigner.js';
 import { createGlobalDocumentProxy } from '../util/DocumentProxy.js';
 import { designerStyles, monacoStyles } from '../styles/designerStyles.js';
@@ -163,8 +163,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 		ACDesigner.GlobalSettings.showTargetVersionMismatchWarning = false;
 
 		// Create and initialize the designer
-		const designer = new ServiceNowCardDesigner(hostContainers);
-		designer.assetPath = "https://unpkg.com/adaptivecards-designer@2.4.4/dist";
+                const designer = new ServiceNowCardDesigner(hostContainers);
+                designer.assetPath = "https://adaptivecards.microsoft.com";
 
 		// Initialize toolbox
 		designer.initializeToolbox(toolboxContent, toolboxHeader);

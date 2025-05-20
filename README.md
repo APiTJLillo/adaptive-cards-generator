@@ -69,3 +69,19 @@ Monaco editor icons display correctly.
 
 Run `npx eslint .` to check for style issues. The project uses the flat config
 in `eslint.config.js`.
+
+### Loading the designer from the CDN
+
+Include the Adaptive Cards Designer bundle before using the component:
+
+```html
+<script src="https://adaptivecards.microsoft.com/main.bundle.js"></script>
+```
+
+The component automatically sets the `assetPath` to
+`https://adaptivecards.microsoft.com` so all designer resources load from the
+same CDN.
+
+The designer and Monaco editor are provided by the bundle, so the
+`adaptivecards-designer` and `monaco-editor` packages are no longer required in
+your build or webpack configuration.
