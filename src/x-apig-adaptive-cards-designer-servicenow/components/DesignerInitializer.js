@@ -163,8 +163,8 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 		ACDesigner.GlobalSettings.showTargetVersionMismatchWarning = false;
 
 		// Create and initialize the designer
-		const designer = new ServiceNowCardDesigner(hostContainers);
-		designer.assetPath = "https://unpkg.com/adaptivecards-designer@2.4.4/dist";
+                const designer = new ServiceNowCardDesigner(hostContainers);
+                designer.assetPath = "https://adaptivecards.microsoft.com";
 
 		// Initialize toolbox
 		designer.initializeToolbox(toolboxContent, toolboxHeader);
@@ -185,9 +185,18 @@ export const initializeDesigner = async (properties, updateState, host, dispatch
 
 		designer.card = initialCard;
 
-		// Attach designer to DOM and update state
-		designer.attachTo(designerContainer);
-		designer.hostElement = designerContainer;
+                // Attach designer to DOM and update state
+                designer.attachTo(designerContainer);
+                const cssLink = document.querySelector(
+                    "link[href$='adaptivecards-designer.css']"
+                );
+                if (cssLink) {
+                    cssLink.href = cssLink.href.replace(
+                        "adaptivecards-designer.css",
+                        "designer.css"
+                    );
+                }
+                designer.hostElement = designerContainer;
 
                 // Store initial card state
                 host.__currentCardState = initialCard;
