@@ -1,4 +1,5 @@
-import * as ACDesigner from "adaptivecards-designer";
+// ACDesigner global is provided by the CDN
+const ACDesigner = globalThis.ACDesigner;
 
 export class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
 	constructor(hostContainers) {
@@ -41,3 +42,4 @@ export class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
 		super.updateJsonEditorsLayout();
 	}
 }
+
