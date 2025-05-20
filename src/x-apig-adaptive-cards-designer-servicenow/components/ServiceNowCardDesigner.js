@@ -1,4 +1,4 @@
-import * as ACDesigner from "adaptivecards-designer";
+const ACDesigner = window.ACDesigner;
 
 export class ServiceNowCardDesigner extends ACDesigner.CardDesigner {
 	constructor(hostContainers) {
