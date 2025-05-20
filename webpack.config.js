@@ -106,10 +106,7 @@ module.exports = {
       }
 
       middlewares.push((req, res, next) => {
-        if (req.url.includes('/monaco-editor/')) {
-          res.setHeader('Content-Type', 'application/javascript');
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        } else if (req.url.endsWith('.css')) {
+        if (req.url.endsWith('.css')) {
           res.setHeader('Content-Type', 'text/css');
         }
         next();
@@ -158,7 +155,7 @@ module.exports = {
   },
   devtool: false,
   plugins: [
-        new webpack.optimize.ModuleConcatenationPlugin(),
+    new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.IgnorePlugin({
       resourceRegExp: /^\.\/locale$/,
       contextRegExp: /moment$/,
