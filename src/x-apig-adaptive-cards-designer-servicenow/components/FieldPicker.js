@@ -55,18 +55,30 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
     if (typeof dispatch === "function") {
         designer._fieldPickerDispatch = dispatch;
     } else {
-        console.warn("No dispatch function provided to addFieldPickersToDesigner, dot-walking may not work");
+        console.warn(
+            "No dispatch function provided to addFieldPickersToDesigner, dot-walking may not work"
+        );
         // Create a safe fallback dispatch function that logs errors
         designer._fieldPickerDispatch = (type, payload) => {
-            console.error("Cannot dispatch event, no dispatch function available", {type, payload});
+            console.error("Cannot dispatch event, no dispatch function available", { type, payload });
             return false;
         };
     }
+
+    // If we still have no fields available after initial checks, skip setup
+    if (!(designer._availableFieldPickerFields && designer._availableFieldPickerFields.length > 0)) {
+        console.warn(
+            "addFieldPickersToDesigner: no fields available, skipping picker setup"
+        );
+        return;
+    }
     
     // Log summary of available fields with more detailed information
-    console.log("Field picker available fields:", 
-        `Total: ${availableFields.length}, ` + 
-        `Reference fields: ${availableFields.filter(f => f.isReference).length}`);
+    console.log(
+        "Field picker available fields:",
+        `Total: ${availableFields.length}, ` +
+            `Reference fields: ${availableFields.filter((f) => f.isReference).length}`
+    );
     
     // Log field type distribution to help debug
     const fieldTypes = {};
@@ -692,16 +704,18 @@ export const addFieldPickersToDesigner = (designer, tableFields, dispatch) => {
                 
                 // Just before opening the picker, double check that we have fields
                 if (!designer._availableFieldPickerFields || designer._availableFieldPickerFields.length === 0) {
-                    console.warn("No fields available when opening field picker, checking for fields in closure");
-                    designer._availableFieldPickerFields = availableFields || [];
+                    console.warn(
+                        "No fields available when opening field picker, aborting"
+                    );
+                    return;
                 }
-                
+
                 // Log the state of fields just before opening the picker
                 console.log("Fields before opening picker:", {
                     fieldsFromDesigner: designer._availableFieldPickerFields?.length || 0,
-                    fieldsFromClosure: availableFields?.length || 0
+                    fieldsFromClosure: availableFields?.length || 0,
                 });
-                
+
                 showFieldPicker(input); // Use the showFieldPicker from the current scope
             };
             wrapper.appendChild(button);
