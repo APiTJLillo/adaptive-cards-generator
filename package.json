@@ -23,7 +23,8 @@
     "adaptivecards-templating": "^2.3.1",
     "markdown-it": "^14.1.0",
     "monaco-editor": "0.17.1",
-    "monaco-editor-webpack-plugin": "^7.0.1"
+    "monaco-editor-webpack-plugin": "^7.0.1",
+    "swiper": "latest"
   },
   "devDependencies": {
     "@babel/runtime": "7.18.9",
