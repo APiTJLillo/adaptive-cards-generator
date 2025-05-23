@@ -273,27 +273,35 @@ createCustomElement("x-apig-adaptive-cards-designer-servicenow", {
             const { name, value } = action.payload;
             console.log("Property changed:", { name, value, valueType: typeof value });
 
-                        if (name === "fields" && value) {
-				console.log("COMPONENT_PROPERTY_CHANGED: Received fields update. Raw value type:", typeof value, 
-				            "Is array?", Array.isArray(value),
-				            "Length:", Array.isArray(value) ? value.length : 'N/A',
-				            "Sample:", Array.isArray(value) && value.length > 0 ? JSON.stringify(value[0], null, 2) : 'No items');
-				
-				// Process the fields using our utility function - ensure we're passing an array
-				const fieldsArray = Array.isArray(value) ? value : 
-				                   (typeof value === 'object' && value !== null) ? [value] : [];
-				                   
-				const parsedFields = processTableFields(fieldsArray);
-				
-				console.log("COMPONENT_PROPERTY_CHANGED: Parsed fields count:", parsedFields.length);
-				if (parsedFields.length > 0) {
-				    console.log("COMPONENT_PROPERTY_CHANGED: First parsed field:", JSON.stringify(parsedFields[0], null, 2));
-				}
-				
-				// Update state with the new fields
-				updateState({ tableFields: parsedFields });
-				
-				// Add field pickers if designer is initialized
+                        if (name === "fields") {
+                                console.log("COMPONENT_PROPERTY_CHANGED: Received fields update. Raw value type:", typeof value,
+                                            "Is array?", Array.isArray(value),
+                                            "Length:", Array.isArray(value) ? value.length : 'N/A',
+                                            "Sample:", Array.isArray(value) && value.length > 0 ? JSON.stringify(value[0], null, 2) : 'No items');
+
+                                // Normalize to an array before processing
+                                const fieldsArray = Array.isArray(value) ? value :
+                                                   (typeof value === 'object' && value !== null) ? [value] : [];
+
+                                const parsedFields = processTableFields(fieldsArray);
+
+                                console.log("COMPONENT_PROPERTY_CHANGED: Parsed fields count:", parsedFields.length);
+                                if (parsedFields.length > 0) {
+                                    console.log("COMPONENT_PROPERTY_CHANGED: First parsed field:", JSON.stringify(parsedFields[0], null, 2));
+                                }
+
+                                if (parsedFields.length === 0 && state.tableFields && state.tableFields.length > 0) {
+                                    console.log("Fields update contained no items; preserving existing fields");
+                                    if (state.designer) {
+                                            addFieldPickersToDesigner(state.designer, state.tableFields, dispatch);
+                                    }
+                                    return;
+                                }
+
+                                // Update state with the new fields
+                                updateState({ tableFields: parsedFields });
+
+                                // Add field pickers if designer is initialized
                                 if (state.designer) {
                                         addFieldPickersToDesigner(state.designer, parsedFields, dispatch);
                                 } else {
